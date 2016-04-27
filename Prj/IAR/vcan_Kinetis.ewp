@@ -5715,6 +5715,9 @@
   <group>
     <name>App</name>
     <file>
+      <name>$PROJ_DIR$\..\..\App\algorithm.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\App\E6A2.c</name>
     </file>
     <file>

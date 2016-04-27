@@ -69,12 +69,21 @@ void discern_init(void)
     read_DIPswitch();
 }
 
+#define start_line 5
+#define end_line (CAMERA_H-5)
 static uint8* get_midline(uint8 *image)
 {
     static uint8 mids[CAMERA_H];
     memset(mids,sizeof(uint8)*CAMERA_H,81);
     
+    static uint8 *left_edge,*right_edge;
+    left_edge=serch_left_black_line(image,start_line,end_line,40);
+    right_edge=serch_right_black_line(image,start_line,end_line,40);
     
+    for(int32 count=start_line;count<=end_line;count++)
+    {
+        mids[count]=(left_edge[count]+right_edge[count])/2;
+    }
     
     return mids;
 }
@@ -123,8 +132,10 @@ static int16 speed_choose(traffic choose)
 static discern_result compute_midline(uint8 *mids)
 {
     discern_result result={0,0};
-    /*compute*/
+    
     result.speed=speed_choose(curve);
+    
+    five_point_smooth(start_line,end_line,mids);
     result.angle=100;
     return result;
 }
