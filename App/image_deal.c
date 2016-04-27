@@ -1,4 +1,5 @@
 #include "include.h"
+#include "algorithm.h"
 #include <string.h>
 
 /*ÉãÏñÍ·Ó²¼þ*/
@@ -71,8 +72,10 @@ void discern_init(void)
 static uint8* get_midline(uint8 *image)
 {
     static uint8 mids[CAMERA_H];
-    memset(mids,sizeof(uint8)*CAMERA_H,0);
-    /*compute*/
+    memset(mids,sizeof(uint8)*CAMERA_H,81);
+    
+    
+    
     return mids;
 }
 
