@@ -1,0 +1,10 @@
+*.out
+*.o
+*.hex
+*.sim
+*.map
+*.pbi.cout
+*.pbi
+*.pbd
+*.pbd.*
+/settings
