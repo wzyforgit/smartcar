@@ -71,32 +71,62 @@ void discern_init(void)
 
 #define start_line 5
 #define end_line (CAMERA_H-5)
+#define base_line 40
 static uint8* get_midline(uint8 *image)
 {
     static uint8 mids[CAMERA_H];
     memset(mids,CAMERA_W+1,sizeof(uint8)*CAMERA_H);
     
-    static uint8 *left_edge,*right_edge;
-    left_edge=serch_left_black_line(image,start_line,end_line,40);
-    right_edge=serch_right_black_line(image,start_line,end_line,40);
+    boundary left_edge,right_edge;
+    left_edge=serch_left_black_line(image,start_line,end_line,base_line);
+    right_edge=serch_right_black_line(image,start_line,end_line,base_line);
     
-    for(int32 count=start_line;count<=end_line;count++)
+    register int32 count;
+    
+    /*扫描前五行*/
+    if(left_edge.done[start_line]+left_edge.done[start_line+1]+left_edge.done[start_line+2]+left_edge.done[start_line+3]+left_edge.done[start_line+4]<=2 &&
+       right_edge.done[start_line]+right_edge.done[start_line+1]+right_edge.done[start_line+2]+right_edge.done[start_line+3]+right_edge.done[start_line+4]<=2)
     {
-        mids[count]=(left_edge[count]+right_edge[count])/2;
+        goto end_of_get_midline;
+    }
+    /*扫描左右丢线*/
+    
+    /*补出中线*/
+    for(count=start_line;count<=end_line;count++)
+    {
+        uint8 get_left=left_edge.done[count];
+        uint8 get_right=right_edge.done[count];
+        if(get_left&&get_right)
+        {
+            mids[count]=(uint8)(left_edge.edge[count]+right_edge.edge[count])/2;
+        }
+        else if(!get_left&&get_right)
+        {
+            mids[count]=(uint8)(right_edge.edge[count]-base_line/2);
+        }
+        else if(get_left&&!get_right)
+        {
+            mids[count]=(uint8)(right_edge.edge[count]+base_line/2);
+        }
+        else
+        {
+            ;
+        }
     }
     
+end_of_get_midline:
     return mids;
 }
 
-static void display_midline(uint8 *mids)
+static void display_lines(int32 start,int32 end,uint8 *lines)
 {
-    Site_t mid_site[CAMERA_H];
-    for(int count=CAMERA_H-1;count>=0;--count)
+    Site_t line_site[end-start+1];
+    for(int32 count=end;count>=start;--count)
     {
-        mid_site[count].x=mids[count];
-        mid_site[count].y=count;
+        line_site[count].x=lines[count];
+        line_site[count].y=count;
     }
-    LCD_points(mid_site,CAMERA_H,RED);
+    LCD_points(line_site,end-start+1,RED);
 }
 
 static int16 speed_choose(traffic choose)
@@ -135,8 +165,8 @@ static discern_result compute_midline(uint8 *mids)
     
     result.speed=speed_choose(curve);
     
-    double k=least_square(start_line,end_line,mids);
-    LCD_printf(0,80,"%4d",(int32)((k-(int32)k)*1000));
+    /*double k=least_square(start_line,end_line,start_line,end_line,mids);
+    LCD_printf(0,80,"%4d",(int32)((k-(int32)k)*1000));*/
     
     five_point_smooth(start_line,end_line,mids);
     result.angle=100;
@@ -146,16 +176,15 @@ static discern_result compute_midline(uint8 *mids)
 discern_result discern(void)
 {
     camera_get_img();
-    LCD_Img_Binary_Z((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, imgbuff, (Size_t){CAMERA_W, CAMERA_H});
     
     img_extract(img, imgbuff, CAMERA_SIZE);
-    
+    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);
     uint8 *mids;
     mids=get_midline(img);
     
     discern_result result={0,0};
     result=compute_midline(mids);
     
-    display_midline(mids);
+    display_lines(start_line,end_line,mids);
     return result;
 }

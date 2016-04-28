@@ -8,10 +8,14 @@
 #undef WHITE
 #define WHITE 255
 
-uint8* serch_left_black_line(uint8 *image,int32 start,int32 end,int32 median)
+boundary serch_left_black_line(uint8 *image,int32 start,int32 end,int32 median)
 {
     static uint8 left_edge[CAMERA_H]={0};
+    static uint8 left_edge_flag[CAMERA_H]={0};
+    static boundary left_edges={left_edge,left_edge_flag};
     register int32 x,y;
+    memset(left_edge_flag,0,sizeof(uint8)*CAMERA_H);
+    
     for(y=start;y<=end;y++)
     {
         for(x=median;x>2;x--)
@@ -23,18 +27,28 @@ uint8* serch_left_black_line(uint8 *image,int32 start,int32 end,int32 median)
                    image[y*CAMERA_W+x-3]==BLACK)
                 {
                     left_edge[y]=x;
+                    left_edge_flag[y]=1;
                     break;
+                }
+                else
+                {
+                    x--;
+                    continue;
                 }
             }
         }
     }
-    return left_edge;
+    return left_edges;
 }
 
-uint8* serch_right_black_line(uint8 *image,int32 start,int32 end,int32 median)
+boundary serch_right_black_line(uint8 *image,int32 start,int32 end,int32 median)
 {
     static uint8 right_edge[CAMERA_H]={0};
+    static uint8 right_edge_flag[CAMERA_H]={0};
+    static boundary right_edges={right_edge,right_edge_flag};
     register int32 x,y;
+    memset(right_edge_flag,0,sizeof(uint8)*CAMERA_H);
+    
     for(y=start;y<=end;y++)
     {
         for(x=median;x<CAMERA_W-3;x++)
@@ -46,12 +60,18 @@ uint8* serch_right_black_line(uint8 *image,int32 start,int32 end,int32 median)
                    image[y*CAMERA_W+x+3]==BLACK)
                 {
                     right_edge[y]=x;
+                    right_edge_flag[y]=1;
                     break;
+                }
+                else
+                {
+                    x++;
+                    continue;
                 }
             }
         }
     }
-    return right_edge;
+    return right_edges;
 }
 
 void five_point_smooth(int32 start,int32 end,uint8 *mids)
@@ -63,12 +83,12 @@ void five_point_smooth(int32 start,int32 end,uint8 *mids)
     }
 }
 
-double least_square(int end,int start,uint8 *mids)//startŒ™◊ÓµÕ∂À–– ˝£¨”Î∆‰À˚∫Ø ˝œ‡∑¥
+double least_square(const int32 end,const int32 start,const int32 map_start,const int32 map_end,uint8 *mids)//startŒ™◊ÓµÕ∂À–– ˝£¨”Î∆‰À˚∫Ø ˝œ‡∑¥
 {
     double rowba;
     double midba;
     int32 midsum;
-    int32 row;
+    register int32 row;
     for(row=start,midsum=0;row>=end;row--)//º∆À„÷–µ„∫Õ
     {
   	    midsum+=mids[row];
@@ -89,9 +109,9 @@ double least_square(int end,int start,uint8 *mids)//startŒ™◊ÓµÕ∂À–– ˝£¨”Î∆‰À˚∫Ø 
     double k,b;
     k=sumx1/sumx2;//º∆À„–±¬ 
     b=midba-k*rowba;//º∆À„Ωÿæ‡
-    for(row=start;row>=end;row--)//º∆À„mids
+    for(row=map_start;row<=map_end;row++)//”≥…‰µΩ∂‘”¶«¯º‰
     {
-	    mids[row]=(int16)(k*row+b+0.5);
+	    mids[row]=(uint8)(k*row+b+0.5);
     }
     return k;
 }

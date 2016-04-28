@@ -375,7 +375,7 @@
         </option>
         <option>
           <name>IccAllowVLA</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccCppDialect</name>
@@ -1095,7 +1095,7 @@
         <option>
           <name>GBECoreSlave</name>
           <version>20</version>
-          <state>39</state>
+          <state>40</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
@@ -1327,7 +1327,7 @@
         </option>
         <option>
           <name>IccAllowVLA</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccCppDialect</name>
