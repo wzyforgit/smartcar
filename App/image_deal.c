@@ -74,7 +74,7 @@ void discern_init(void)
 static uint8* get_midline(uint8 *image)
 {
     static uint8 mids[CAMERA_H];
-    memset(mids,sizeof(uint8)*CAMERA_H,81);
+    memset(mids,CAMERA_W+1,sizeof(uint8)*CAMERA_H);
     
     static uint8 *left_edge,*right_edge;
     left_edge=serch_left_black_line(image,start_line,end_line,40);
@@ -135,6 +135,9 @@ static discern_result compute_midline(uint8 *mids)
     
     result.speed=speed_choose(curve);
     
+    double k=least_square(start_line,end_line,mids);
+    LCD_printf(0,80,"%4d",(int32)((k-(int32)k)*1000));
+    
     five_point_smooth(start_line,end_line,mids);
     result.angle=100;
     return result;
@@ -146,8 +149,13 @@ discern_result discern(void)
     LCD_Img_Binary_Z((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, imgbuff, (Size_t){CAMERA_W, CAMERA_H});
     
     img_extract(img, imgbuff, CAMERA_SIZE);
+    
     uint8 *mids;
     mids=get_midline(img);
+    
+    discern_result result={0,0};
+    result=compute_midline(mids);
+    
     display_midline(mids);
-    return compute_midline(mids);
+    return result;
 }

@@ -59,6 +59,39 @@ void five_point_smooth(int32 start,int32 end,uint8 *mids)
     register int32 count;
     for(count=start;count<=end-4;++count)
     {
-        mids[count]=(int32)((mids[count]+mids[count+1]+mids[count+2]+mids[count+3]+mids[count+4])/5);
+        mids[count]=(mids[count]+mids[count+1]+mids[count+2]+mids[count+3]+mids[count+4])/5;
     }
+}
+
+double least_square(int end,int start,uint8 *mids)//start为最低端行数，与其他函数相反
+{
+    double rowba;
+    double midba;
+    int32 midsum;
+    int32 row;
+    for(row=start,midsum=0;row>=end;row--)//计算中点和
+    {
+  	    midsum+=mids[row];
+    }
+    midba=(double)midsum/(start-end+1);//计算mid均值
+    rowba=(double)(end+start)/2.0;//计算row均值
+    
+    double sumx1;
+    double sumx2;
+    for(row=start,sumx1=0,sumx2=0;row>=end;row--)//计算斜率的分子(sumx1)/分母(sumx2)
+    {
+	    double temp;
+	    temp=row-rowba;
+	    sumx1+=temp*(mids[row]-midba);
+	    sumx2+=pow(temp,2);
+    }
+    
+    double k,b;
+    k=sumx1/sumx2;//计算斜率
+    b=midba-k*rowba;//计算截距
+    for(row=start;row>=end;row--)//计算mids
+    {
+	    mids[row]=(int16)(k*row+b+0.5);
+    }
+    return k;
 }
