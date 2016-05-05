@@ -83,6 +83,31 @@ void five_point_smooth(int32 start,int32 end,uint8 *mids)
     }
 }
 
+uint8 get_average_mid(int32 start,int32 end,flag_t *flag,uint8 *mids)
+{
+    register int32 count,effective_lines_num;
+    int32 mid_result=0;
+    for(count=start,effective_lines_num=0;count<=end;count++)
+    {
+        if(flag[count])
+        {
+            effective_lines_num++;
+            if(mids[count]<=80)
+            {
+                mid_result+=mids[count];
+            }
+        }
+    }
+    if(effective_lines_num==0)
+    {
+        return 0;
+    }
+    else
+    {
+        return (uint8)((double)mid_result/effective_lines_num+0.5);
+    }
+}
+
 double least_square(const int32 end,const int32 start,const int32 map_start,const int32 map_end,uint8 *mids)//start为最低端行数，与其他函数相反
 {
     double rowba;

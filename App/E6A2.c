@@ -58,7 +58,7 @@ static void speed_control(void)
 
 static void PIT0_IRQHandler(void)
 {
-    motor_speed=ftm_quad_get(quad_module)/sampling_period*20;   //转换为20ms内的编码值
+    motor_speed=(int16)((double)ftm_quad_get(quad_module)/sampling_period*20);   //转换为20ms内的编码值
     speed_control();
     ftm_quad_clean(quad_module);
     PIT_Flag_Clear(PIT0);

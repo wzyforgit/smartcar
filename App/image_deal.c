@@ -72,6 +72,7 @@ void discern_init(void)
 #define start_line 5
 #define end_line (CAMERA_H-5)
 #define base_line 40
+
 static uint8* get_midline(uint8 *image)
 {
     static uint8 mids[CAMERA_H];
@@ -89,7 +90,7 @@ static uint8* get_midline(uint8 *image)
     {
         goto end_of_get_midline;
     }
-    /*扫描左右丢线*/
+    /*丢线处理*/
     
     /*补出中线*/
     for(count=start_line;count<=end_line;count++)
@@ -168,7 +169,9 @@ static discern_result compute_midline(uint8 *mids)
     /*double k=least_square(start_line,end_line,start_line,end_line,mids);
     LCD_printf(0,80,"%4d",(int32)((k-(int32)k)*1000));*/
     
+    flag_t effective_line_flag[CAMERA_H];//just for test
     five_point_smooth(start_line,end_line,mids);
+    get_average_mid(start_line,end_line,effective_line_flag,mids);
     result.angle=100;
     return result;
 }
