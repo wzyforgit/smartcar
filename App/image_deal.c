@@ -63,8 +63,6 @@ void discern_init(void)
     camera_init(imgbuff);
     set_vector_handler(PORTA_VECTORn , PORTA_IRQHandler);   //摄像头场中断
     set_vector_handler(DMA0_VECTORn , DMA0_IRQHandler);     //摄像头DMA中断
-    NVIC_SetPriority(PORTA_IRQn,0);
-    NVIC_SetPriority(DMA0_IRQn,1);
     read_DIPswitch();
 }
 

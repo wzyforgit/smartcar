@@ -68,7 +68,6 @@ void E6A2_init(void)
 {
     ftm_quad_init(quad_module);                                 //FTM2 正交解码初始化（所用的管脚可查 port_cfg.h ）
     pit_init_ms(PIT0, sampling_period);                         //初始化PIT0，定时时间为： sampling_period ms
-    set_vector_handler(PIT0_VECTORn ,PIT0_IRQHandler);          //设置PIT0的中断服务函数为 PIT0_IRQHandler
-    NVIC_SetPriority(PIT0_IRQn,2);
+    set_vector_handler(PIT0_VECTORn ,PIT0_IRQHandler);
     enable_irq (PIT0_IRQn);                                     //使能PIT0中断
 }
