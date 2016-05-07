@@ -2,7 +2,7 @@
 #define _E6A2_H_
 
 extern void  E6A2_init(void);
-extern int16 get_speed(void);
-extern void set_speed(int16 want_speed);
+extern speed_t get_speed(void);
+extern void set_speed(speed_t want_speed);
 
 #endif

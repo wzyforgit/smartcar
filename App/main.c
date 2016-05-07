@@ -35,7 +35,7 @@ void main(void)
     init();
     set_speed(0);
     set_servo(servo_right,0);
-    discern_result control_result;
+    discern_result_t control_result;
     while(1)
     {
         control_result=discern();

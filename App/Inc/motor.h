@@ -8,6 +8,6 @@ typedef enum
 }motor_path;
 
 extern void motor_init(void);
-extern void set_motor(motor_path path,uint32 duty);
+extern void set_motor(motor_path path,duty_t duty);
 
 #endif

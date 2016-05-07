@@ -1,6 +1,6 @@
 #include "include.h"
 
-#define Inverters 1
+#define Inverters 0
 
 #define MOTOR_FTM   FTM0
 #define MOTOR1_PWM  FTM_CH3

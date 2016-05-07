@@ -8,7 +8,7 @@ typedef enum
 }servo_path;
 
 extern void servo_init(void);
-extern void set_servo(servo_path path,uint32 angle);
-extern void set_angle(int32 angle);
+extern void set_servo(servo_path path,duty_t angle);
+extern void set_angle(angle_t angle);
 
 #endif

@@ -11,9 +11,9 @@ void servo_init(void)
     ftm_pwm_init(servo_FTM, servo_CH,servo_HZ,FTM1_PRECISON);
 }
 
-void set_servo(servo_path path,uint32 angle)
+void set_servo(servo_path path,duty_t angle)
 {
-    uint32 pwm_out=0;
+    duty_t pwm_out=0;
     
     if(path==servo_right)
     {
@@ -34,11 +34,11 @@ void set_servo(servo_path path,uint32 angle)
 }
 
 #define P 4
-static void angle_control(int32 want_angle)
+static void angle_control(angle_t want_angle)
 {
-    static int32 last_angle=0;
+    static angle_t last_angle=0;
     
-    int32 result=P*(want_angle-last_angle)+last_angle;
+    angle_t result=P*(want_angle-last_angle);
     if(result>0)
     {
         set_servo(servo_right,result);
@@ -50,7 +50,7 @@ static void angle_control(int32 want_angle)
     last_angle=result;
 }
 
-void set_angle(int32 angle)
+void set_angle(angle_t angle)
 {
     angle_control(angle);
 }

@@ -8,13 +8,13 @@
 #undef WHITE
 #define WHITE 255
 
-boundary serch_left_black_line(uint8 *image,int32 start,int32 end,int32 median)
+boundary_t serch_left_black_line(pixel_t *image,local_t start,local_t end,local_t median)
 {
-    static uint8 left_edge[CAMERA_H]={0};
-    static uint8 left_edge_flag[CAMERA_H]={0};
-    static boundary left_edges={left_edge,left_edge_flag};
-    register int32 x,y;
-    memset(left_edge_flag,0,sizeof(uint8)*CAMERA_H);
+    static local_t left_edge[CAMERA_H]={0};
+    static flag_t left_edge_flag[CAMERA_H]={0};
+    static boundary_t left_edges={left_edge,left_edge_flag};
+    register count_t x,y;
+    memset(left_edge_flag,0,sizeof(flag_t)*CAMERA_H);
     
     for(y=start;y<=end;y++)
     {
@@ -41,13 +41,13 @@ boundary serch_left_black_line(uint8 *image,int32 start,int32 end,int32 median)
     return left_edges;
 }
 
-boundary serch_right_black_line(uint8 *image,int32 start,int32 end,int32 median)
+boundary_t serch_right_black_line(pixel_t *image,local_t start,local_t end,local_t median)
 {
-    static uint8 right_edge[CAMERA_H]={0};
-    static uint8 right_edge_flag[CAMERA_H]={0};
-    static boundary right_edges={right_edge,right_edge_flag};
-    register int32 x,y;
-    memset(right_edge_flag,0,sizeof(uint8)*CAMERA_H);
+    static local_t right_edge[CAMERA_H]={0};
+    static flag_t right_edge_flag[CAMERA_H]={0};
+    static boundary_t right_edges={right_edge,right_edge_flag};
+    register count_t x,y;
+    memset(right_edge_flag,0,sizeof(flag_t)*CAMERA_H);
     
     for(y=start;y<=end;y++)
     {
@@ -74,19 +74,19 @@ boundary serch_right_black_line(uint8 *image,int32 start,int32 end,int32 median)
     return right_edges;
 }
 
-void five_point_smooth(int32 start,int32 end,uint8 *mids)
+void five_point_smooth(local_t start,local_t end,local_t *mids)
 {
-    register int32 count;
+    register count_t count;
     for(count=start;count<=end-4;++count)
     {
         mids[count]=(mids[count]+mids[count+1]+mids[count+2]+mids[count+3]+mids[count+4])/5;
     }
 }
 
-uint8 get_average_mid(int32 start,int32 end,flag_t *flag,uint8 *mids)
+local_t get_average_mid(local_t start,local_t end,flag_t *flag,local_t *mids)
 {
-    register int32 count,effective_lines_num;
-    int32 mid_result=0;
+    register count_t count,effective_lines_num;
+    local_t mid_result=0;
     for(count=start,effective_lines_num=0;count<=end;count++)
     {
         if(flag[count])
@@ -108,12 +108,12 @@ uint8 get_average_mid(int32 start,int32 end,flag_t *flag,uint8 *mids)
     }
 }
 
-double least_square(const int32 end,const int32 start,const int32 map_start,const int32 map_end,uint8 *mids)//start为最低端行数，与其他函数相反
+double least_square(const local_t end,const local_t start,const local_t map_start,const local_t map_end,local_t *mids)//start为最低端行数，与其他函数相反
 {
     double rowba;
     double midba;
     int32 midsum;
-    register int32 row;
+    register count_t row;
     for(row=start,midsum=0;row>=end;row--)//计算中点和
     {
   	    midsum+=mids[row];

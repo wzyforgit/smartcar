@@ -4,15 +4,15 @@
 #define quad_module     FTM2
 #define sampling_period 20
 
-static vint16 motor_speed=0;
-static vint16 goal_speed=0;
+static volatile speed_t motor_speed=0;
+static volatile speed_t goal_speed=0;
 
-int16 get_speed(void)
+speed_t get_speed(void)
 {
     return motor_speed;
 }
 
-void set_speed(int16 want_speed)
+void set_speed(speed_t want_speed)
 {
     goal_speed=want_speed;
 }
@@ -25,11 +25,11 @@ void set_speed(int16 want_speed)
 #define C (D)
 static void speed_control(void)
 {
-    static int16 speed_diff[3]={0,0,0};
-    static int16 last_result=0;
+    static speed_t speed_diff[3]={0,0,0};
+    static speed_t last_result=0;
     
-    int16 _goal_speed=goal_speed;
-    int16 _motor_speed=motor_speed;
+    speed_t _goal_speed=goal_speed;
+    speed_t _motor_speed=motor_speed;
     
     speed_diff[2]=speed_diff[1];
     speed_diff[1]=speed_diff[0];
@@ -40,7 +40,7 @@ static void speed_control(void)
         return;
     }
     
-    int16 result=(int16)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]+last_result);
+    speed_t result=(speed_t)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]+last_result);
     if(result>0)
     {
         if(result>(700))
@@ -58,7 +58,12 @@ static void speed_control(void)
 
 static void PIT0_IRQHandler(void)
 {
-    motor_speed=(int16)((double)ftm_quad_get(quad_module)/sampling_period*20);   //转换为20ms内的编码值
+#if(sampling_period==20)
+    motor_speed=ftm_quad_get(quad_module);
+#else
+    //转换为20ms内的编码值
+    motor_speed=(speed_t)((double)ftm_quad_get(quad_module)/sampling_period*20);
+#endif
     speed_control();
     ftm_quad_clean(quad_module);
     PIT_Flag_Clear(PIT0);

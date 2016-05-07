@@ -3,9 +3,9 @@
 
 typedef struct
 {
-    int32 angle;
-    int16 speed;
-}discern_result;
+    angle_t angle;
+    speed_t speed;
+}discern_result_t;
 
 typedef enum
 {
@@ -15,6 +15,6 @@ typedef enum
 }traffic;
 
 extern void discern_init(void);
-extern discern_result discern(void);
+extern discern_result_t discern(void);
 
 #endif
