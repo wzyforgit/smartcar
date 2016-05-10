@@ -37,17 +37,22 @@ void set_servo(servo_path path,duty_t angle)
 static void angle_control(angle_t want_angle)
 {
     static angle_t last_angle=0;
-    
-    angle_t result=P*(want_angle-last_angle);
+    angle_t angle_diff=want_angle-last_angle;
+    if(abs(angle_diff)<2)
+    {
+        return;
+    }
+    angle_t result=P*angle_diff;
     if(result>0)
     {
         set_servo(servo_right,result);
     }
     else
     {
-        set_servo(servo_left,abs(result));
+        set_servo(servo_left,(-result));
     }
     last_angle=result;
+    LCD_printf(0,110,"%5d",result);
 }
 
 void set_angle(angle_t angle)

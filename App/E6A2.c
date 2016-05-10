@@ -2,6 +2,8 @@
 #include <math.h>
 
 #define quad_module     FTM2
+
+/*为了不影响图像采集和显示，推荐不要小于20*/
 #define sampling_period 20
 
 static volatile speed_t motor_speed=0;
@@ -17,43 +19,42 @@ void set_speed(speed_t want_speed)
     goal_speed=want_speed;
 }
 
-#define P 2.5
-#define I 0.4
-#define D 0.15
+#define P 2
+#define I 0
+#define D 0
 #define A (P+I+D)
 #define B (P+2*D)
 #define C (D)
 static void speed_control(void)
 {
     static speed_t speed_diff[3]={0,0,0};
-    static speed_t last_result=0;
     
-    speed_t _goal_speed=goal_speed;
-    speed_t _motor_speed=motor_speed;
+    int32 _goal_speed=goal_speed;
+    int32 _motor_speed=motor_speed;
     
     speed_diff[2]=speed_diff[1];
     speed_diff[1]=speed_diff[0];
     speed_diff[0]=_goal_speed-_motor_speed;
     
-    if(speed_diff[0]<10)
+    if(abs(speed_diff[0])<5)
     {
         return;
     }
     
-    speed_t result=(speed_t)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]+last_result);
+    int32 result=(int32)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]);
+    LCD_printf(0,80,"%5d  %5d",motor_speed,result);
     if(result>0)
     {
-        if(result>(700))
-            result=700;
-        set_motor(motor_forward,result);
+        if(result>(500))
+            result=500;
+        set_motor(motor_forward,(speed_t)(result));
     }
     else
     {
-        if(result<(-700))
-            result=-700;
-        set_motor(motor_back,(-result));
+        if(result<(-500))
+            result=-500;
+        set_motor(motor_back,(speed_t)(-result));
     }
-    last_result=result;
 }
 
 static void PIT0_IRQHandler(void)

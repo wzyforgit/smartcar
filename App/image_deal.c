@@ -76,11 +76,10 @@ void discern_init(void)
 static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H];
-    memset(mids,CAMERA_W+1,sizeof(local_t)*CAMERA_H);
     
     boundary_t left_edge,right_edge;
-    left_edge=serch_left_black_line(image,start_line,end_line,base_line);
-    right_edge=serch_right_black_line(image,start_line,end_line,base_line);
+    left_edge=serch_left_black_line(image,start_line,end_line,base_line+10);
+    right_edge=serch_right_black_line(image,start_line,end_line,base_line-10);
     
     register count_t count;
     
@@ -97,19 +96,27 @@ static local_t* get_midline(pixel_t *image)
     {
         flag_t get_left=left_edge.done[count];
         flag_t get_right=right_edge.done[count];
-        if(get_left&&get_right)
+        if(get_left&&get_right)//都找到
         {
             mids[count]=(local_t)(left_edge.edge[count]+right_edge.edge[count])/2;
         }
-        else if(!get_left&&get_right)
+        else if(!get_left&&get_right)//左丢失
         {
             mids[count]=(local_t)(right_edge.edge[count]-base_line/2);
+            if(mids[count]>=80)
+            {
+                mids[count]=0;
+            }
         }
-        else if(get_left&&!get_right)
+        else if(get_left&&!get_right)//右丢失
         {
-            mids[count]=(local_t)(right_edge.edge[count]+base_line/2);
+            mids[count]=(local_t)(left_edge.edge[count]+base_line/2);
+            if(mids[count]>=80)
+            {
+                mids[count]=79;
+            }
         }
-        else
+        else//全丢失
         {
             ;
         }
@@ -121,14 +128,14 @@ end_of_get_midline:
 
 static void display_lines(local_t start,local_t end,local_t *lines)
 {
-    Site_t line_site[end-start+1];
-    count_t count,line_count;
-    for(count=start,line_count=0;count<=end;count++,line_count++)
+    Site_t line_site[CAMERA_H];
+    register count_t count;
+    for(count=start;count<=end;count++)
     {
-        line_site[line_count].x=lines[count];
-        line_site[line_count].y=count;
+        line_site[count].x=lines[count];
+        line_site[count].y=count;
     }
-    LCD_points(line_site,end-start+1,RED);
+    LCD_points(line_site+start,count,RED);
 }
 
 static speed_t speed_choose(traffic choose)
@@ -161,34 +168,29 @@ static speed_t speed_choose(traffic choose)
     return speed;
 }
 
-static discern_result_t compute_midline(local_t *mids)
+static discern_result_t compute_result(local_t *mids)
 {
     discern_result_t result={0,0};
     
-    result.speed=speed_choose(curve);
-    
-    /*double k=least_square(start_line,end_line,start_line,end_line,mids);
-    LCD_printf(0,80,"%4d",(int32)((k-(int32)k)*1000));*/
-    
-    flag_t effective_line_flag[CAMERA_H];//just for test
+    result.speed=speed_choose(beeline);
     five_point_smooth(start_line,end_line,mids);
-    get_average_mid(start_line,end_line,effective_line_flag,mids);
-    result.angle=-500;
+    result.angle=get_average_mid(start_line,end_line,mids)-base_line;
     return result;
 }
 
 discern_result_t discern(void)
 {
-    camera_get_img();
+    camera_get_img();//获取图像
     
-    img_extract(img, imgbuff, CAMERA_SIZE);
-    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);
-    local_t *mids;
-    mids=get_midline(img);
+    img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
+    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示图像
+    
+    local_t *mids;//中线
+    mids=get_midline(img);//链接中线与中线有效标记
     
     discern_result_t result={0,0};
-    result=compute_midline(mids);
+    result=compute_result(mids);//计算偏角，速度选择
     
-    display_lines(start_line,end_line,mids);
-    return result;
+    display_lines(start_line,end_line,mids);//显示有效的中线
+    return result;//返回识别结果
 }

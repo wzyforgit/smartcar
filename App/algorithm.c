@@ -26,9 +26,14 @@ boundary_t serch_left_black_line(pixel_t *image,local_t start,local_t end,local_
                    image[y*CAMERA_W+x-2]==BLACK &&
                    image[y*CAMERA_W+x-3]==BLACK)
                 {
-                    left_edge[y]=x;
-                    left_edge_flag[y]=1;
-                    break;
+                    if(image[y*CAMERA_W+x+1]==WHITE &&
+                       image[y*CAMERA_W+x+2]==WHITE &&
+                       image[y*CAMERA_W+x+3]==WHITE)
+                    {
+                        left_edge[y]=x;
+                        left_edge_flag[y]=1;
+                        break;
+                    }
                 }
                 else
                 {
@@ -59,9 +64,14 @@ boundary_t serch_right_black_line(pixel_t *image,local_t start,local_t end,local
                    image[y*CAMERA_W+x+2]==BLACK &&
                    image[y*CAMERA_W+x+3]==BLACK)
                 {
-                    right_edge[y]=x;
-                    right_edge_flag[y]=1;
-                    break;
+                    if(image[y*CAMERA_W+x-1]==WHITE &&
+                       image[y*CAMERA_W+x-2]==WHITE &&
+                       image[y*CAMERA_W+x-3]==WHITE)
+                    {
+                        right_edge[y]=x;
+                        right_edge_flag[y]=1;
+                        break;
+                    }
                 }
                 else
                 {
@@ -83,29 +93,16 @@ void five_point_smooth(local_t start,local_t end,local_t *mids)
     }
 }
 
-local_t get_average_mid(local_t start,local_t end,flag_t *flag,local_t *mids)
+local_t get_average_mid(local_t start,local_t end,local_t *mids)
 {
     register count_t count,effective_lines_num;
     local_t mid_result=0;
     for(count=start,effective_lines_num=0;count<=end;count++)
     {
-        if(flag[count])
-        {
-            effective_lines_num++;
-            if(mids[count]<=80)
-            {
-                mid_result+=mids[count];
-            }
-        }
+        effective_lines_num++;
+        mid_result+=mids[count];
     }
-    if(effective_lines_num==0)
-    {
-        return 0;
-    }
-    else
-    {
-        return (uint8)((double)mid_result/effective_lines_num+0.5);
-    }
+    return (local_t)((double)mid_result/effective_lines_num+0.5);
 }
 
 double least_square(const local_t end,const local_t start,const local_t map_start,const local_t map_end,local_t *mids)//start为最低端行数，与其他函数相反

@@ -41,5 +41,6 @@ void main(void)
         control_result=discern();
         set_angle(control_result.angle);
         set_speed(control_result.speed);
+        LCD_printf(0,95,"%5d  %5d",control_result.angle,control_result.speed);
     }
 }
