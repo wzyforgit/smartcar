@@ -40,15 +40,6 @@ typedef volatile uint16     vuint16; /* 16 bits */
 typedef volatile uint32     vuint32; /* 32 bits */
 typedef volatile uint64     vuint64; /* 64 bits */
 
-/*特殊数据类型*/
-typedef uint32 duty_t;
-typedef int16 angle_t;
-typedef int16 speed_t;
-typedef uint8  local_t;
-typedef uint8 pixel_t;
-typedef int32 count_t;
-typedef _Bool  flag_t;
-
 /*
  * 定义带位域的联合体类型
  */

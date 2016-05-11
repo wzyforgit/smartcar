@@ -3,6 +3,15 @@
 
 #include  "common.h"
 
+ /*特殊数据类型*/
+typedef uint32 duty_t;
+typedef int16 angle_t;
+typedef int16 speed_t;
+typedef uint8  local_t;
+typedef uint8 pixel_t;
+typedef int32 count_t;
+typedef _Bool  flag_t;
+
 /*
  * Include 用户自定义的头文件
  */
@@ -49,8 +58,5 @@
 //#include  "Vcan_touch.h"        //触摸驱动
 
 //#include  "VCAN_computer.h"     //多功能调试助手
-
-
-
 
 #endif  //__INCLUDE_H__

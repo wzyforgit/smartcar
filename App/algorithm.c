@@ -93,18 +93,6 @@ void five_point_smooth(local_t start,local_t end,local_t *mids)
     }
 }
 
-local_t get_average_mid(local_t start,local_t end,local_t *mids)
-{
-    register count_t count,effective_lines_num;
-    local_t mid_result=0;
-    for(count=start,effective_lines_num=0;count<=end;count++)
-    {
-        effective_lines_num++;
-        mid_result+=mids[count];
-    }
-    return (local_t)((double)mid_result/effective_lines_num+0.5);
-}
-
 double least_square(const local_t end,const local_t start,const local_t map_start,const local_t map_end,local_t *mids)//start为最低端行数，与其他函数相反
 {
     double rowba;

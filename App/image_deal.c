@@ -59,37 +59,41 @@ static void read_DIPswitch(void)
     LCD_printf(0,61,"%d",mode);
 }
 
+static void display_start_end(void);
 void discern_init(void)
 {
+    
     camera_init(imgbuff);
     set_vector_handler(PORTA_VECTORn , PORTA_IRQHandler);   //摄像头场中断
     set_vector_handler(DMA0_VECTORn , DMA0_IRQHandler);     //摄像头DMA中断
     NVIC_SetPriority(PORTA_IRQn,0);
     NVIC_SetPriority(DMA0_IRQn,1);
     read_DIPswitch();
+    display_start_end();
 }
 
-#define start_line 5
+#define start_line 20
 #define end_line (CAMERA_H-5)
-#define base_line 40
+#define base_line 38
 
 static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H];
     
     boundary_t left_edge,right_edge;
-    left_edge=serch_left_black_line(image,start_line,end_line,base_line+10);
-    right_edge=serch_right_black_line(image,start_line,end_line,base_line-10);
+    left_edge=serch_left_black_line(image,start_line,end_line,base_line+5);
+    right_edge=serch_right_black_line(image,start_line,end_line,base_line-5);
     
     register count_t count;
     
     /*扫描前五行*/
+#if(start_line<=15)
     if(left_edge.done[start_line]+left_edge.done[start_line+1]+left_edge.done[start_line+2]+left_edge.done[start_line+3]+left_edge.done[start_line+4]<=2 &&
        right_edge.done[start_line]+right_edge.done[start_line+1]+right_edge.done[start_line+2]+right_edge.done[start_line+3]+right_edge.done[start_line+4]<=2)
     {
-        goto end_of_get_midline;
+        return NULL;
     }
-    /*丢线处理*/
+#endif
     
     /*补出中线*/
     for(count=start_line;count<=end_line;count++)
@@ -121,9 +125,25 @@ static local_t* get_midline(pixel_t *image)
             ;
         }
     }
-    
-end_of_get_midline:
     return mids;
+}
+
+static void display_start_end(void)
+{
+    Site_t lines[CAMERA_W];
+    register count_t count;
+    for(count=0;count<CAMERA_W;count++)
+    {
+        lines[count].x=count;
+        lines[count].y=start_line-1;
+    }
+    LCD_points(lines,CAMERA_W,RED);
+    for(count=0;count<CAMERA_W;count++)
+    {
+        lines[count].x=count;
+        lines[count].y=end_line+1;
+    }
+    LCD_points(lines,CAMERA_W,RED);
 }
 
 static void display_lines(local_t start,local_t end,local_t *lines)
@@ -168,6 +188,36 @@ static speed_t speed_choose(traffic choose)
     return speed;
 }
 
+local_t get_average_mid(local_t start,local_t end,local_t *mids)
+{
+    static const double weight[CAMERA_H]={
+        2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,
+        2.6,2.6,2.6,2.6,2.6,2.56,2.52,2.48,2.44,2.4,      
+        2.36,2.32,2.3,2.26,2.22,2.18,2.14,2.1,2.06,2.02,
+        1.98,1.94,1.9,1.86,1.82,1.78,1.74,1.7,1.66,1.62,
+        1.58,1.54,1.5,1.47,1.42,1.38,1.34,1.3,1.26,1.22,
+        1.18,1.14,1.10,1.07,1.03,1.0,1.0,1.0,1.0,1.0
+    };
+    
+    register count_t count;
+    double mid_result=0;
+    for(count=start;count<=end;count++)
+    {
+        mid_result+=((mids[count]-base_line)*weight[count]);
+    }
+    
+    double result=mid_result+0.5;
+    if(result<(-base_line))
+    {
+        return 0;
+    }
+    if(result>(CAMERA_W-base_line))
+    {
+        return CAMERA_W-1;
+    }
+    return (local_t)(result+base_line);
+}
+
 static discern_result_t compute_result(local_t *mids)
 {
     discern_result_t result={0,0};
@@ -188,7 +238,13 @@ discern_result_t discern(void)
     local_t *mids;//中线
     mids=get_midline(img);//链接中线与中线有效标记
     
-    discern_result_t result={0,0};
+    static discern_result_t result={0,0};
+#if(start_line<=15)
+    if(mids==NULL)
+    {
+        return result;
+    }
+#endif
     result=compute_result(mids);//计算偏角，速度选择
     
     display_lines(start_line,end_line,mids);//显示有效的中线
