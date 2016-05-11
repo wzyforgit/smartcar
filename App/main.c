@@ -22,7 +22,7 @@
 #define LCD_debug     4
 #define discern_debug 5
 
-#define HDdebug motor_debug
+#define HDdebug servo_debug
 
 #if(HDdebug!=motor_debug&&HDdebug!=servo_debug&&HDdebug!=E6A2_debug&&HDdebug!=LCD_debug&&HDdebug!=discern_debug)
 #error Unknown debug mode
@@ -56,7 +56,8 @@ void main(void)
 #if(HDdebug==motor_debug)
     set_motor(motor_back,500);
 #elif(HDdebug==servo_debug)
-    set_servo(servo_left,500);
+    set_servo(servo_right,0);
+//    set_servo(servo_left,900);
 #elif(HDdebug==E6A2_debug)
     while(1)
     {
