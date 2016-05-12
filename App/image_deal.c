@@ -130,20 +130,20 @@ static local_t* get_midline(pixel_t *image)
 
 static void display_start_end(void)
 {
-    Site_t lines[CAMERA_W];
+    Site_t lines[CAMERA_W+20];
     register count_t count;
-    for(count=0;count<CAMERA_W;count++)
+    for(count=0;count<CAMERA_W+20;count++)
     {
         lines[count].x=count;
         lines[count].y=start_line-1;
     }
-    LCD_points(lines,CAMERA_W,RED);
-    for(count=0;count<CAMERA_W;count++)
+    LCD_points(lines,CAMERA_W+20,BLUE);
+    for(count=0;count<CAMERA_W+20;count++)
     {
         lines[count].x=count;
         lines[count].y=end_line+1;
     }
-    LCD_points(lines,CAMERA_W,RED);
+    LCD_points(lines,CAMERA_W+20,BLUE);
 }
 
 static void display_lines(local_t start,local_t end,local_t *lines)
@@ -191,31 +191,36 @@ static speed_t speed_choose(traffic choose)
 local_t get_average_mid(local_t start,local_t end,local_t *mids)
 {
     static const double weight[CAMERA_H]={
-        2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,
-        2.6,2.6,2.6,2.6,2.6,2.56,2.52,2.48,2.44,2.4,      
-        2.36,2.32,2.3,2.26,2.22,2.18,2.14,2.1,2.06,2.02,
-        1.98,1.94,1.9,1.86,1.82,1.78,1.74,1.7,1.66,1.62,
-        1.58,1.54,1.5,1.47,1.42,1.38,1.34,1.3,1.26,1.22,
-        1.18,1.14,1.10,1.07,1.03,1.0,1.0,1.0,1.0,1.0
+        2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6,
+        2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.56,2.52,2.48,2.44,2.4,      
+        2.36,2.32,2.3 ,2.26,2.22,2.18,2.14,2.1,2.06,2.02,
+        1.98,1.94,1.9 ,1.86,1.82,1.78,1.74,1.7,1.66,1.62,
+        1.58,1.54,1.5 ,1.47,1.42,1.38,1.34,1.3,1.26,1.22,
+        1.18,1.14,1.10,1.07,1.03,1.0 ,1.0 ,1.0,1.0 ,1.0
     };
     
     register count_t count;
     double mid_result=0;
+    double div=0;
     for(count=start;count<=end;count++)
     {
-        mid_result+=((mids[count]-base_line)*weight[count]);
+        mid_result+=(mids[count]*weight[count]);
+        div+=weight[count];
     }
     
-    double result=mid_result+0.5;
-    if(result<(-base_line))
+    double result=mid_result/div+0.5;
+    if(result<0)
     {
         return 0;
     }
-    if(result>(CAMERA_W-base_line))
+    else if(result>CAMERA_W-1)
     {
         return CAMERA_W-1;
     }
-    return (local_t)(result+base_line);
+    else
+    {
+        return (local_t)result;
+    }
 }
 
 static discern_result_t compute_result(local_t *mids)

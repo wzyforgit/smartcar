@@ -34,7 +34,7 @@ void set_servo(servo_path path,duty_t angle)
 }
 
 #define P_base 42
-#define P (P_base*2)
+#define P (P_base*2.5)
 static void angle_control(angle_t want_angle)
 {
     if(abs(want_angle)<2)
