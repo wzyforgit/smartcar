@@ -2,11 +2,15 @@
 #include "algorithm.h"
 #include <string.h>
 
+#ifdef BLACK
 #undef BLACK
-#define BLACK 0
+#endif
+#define BLACK 255
 
+#ifdef WHITE
 #undef WHITE
-#define WHITE 255
+#endif
+#define WHITE 0
 
 boundary_t serch_left_black_line(pixel_t *image,local_t start,local_t end,local_t median)
 {
@@ -124,4 +128,25 @@ double least_square(const local_t end,const local_t start,const local_t map_star
 	    mids[row]=(uint8)(k*row+b+0.5);
     }
     return k;
+}
+
+/*边界提取(取周围四个点)*/
+pixel_t* get_frame(pixel_t *src)
+{
+	static pixel_t dst[2] = { 0 };
+	//register count_t x, y;
+	/*for (y = 1; y < CAMERA_H - 1; y++)
+	{
+		for (x = 1; x < CAMERA_W - 1; x++)
+		{
+			dst[y*CAMERA_W+x] =
+				dst[y*CAMERA_W+x] ^
+				(dst[y*CAMERA_W+x] |
+				dst[(y+1)*CAMERA_W+x] | 
+				dst[y*CAMERA_W+x+1] |
+				dst[y*CAMERA_W+x-1] |
+				dst[(y-1)*CAMERA_W+x]);
+		}
+	}*/
+	return NULL;
 }

@@ -238,10 +238,12 @@ discern_result_t discern(void)
     camera_get_img();//获取图像
     
     img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
+    pixel_t *frame_img=NULL;
+    frame_img=get_frame(img);
     LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示图像
     
     local_t *mids;//中线
-    mids=get_midline(img);//链接中线与中线有效标记
+    mids=get_midline(frame_img);//链接中线与中线有效标记
     
     static discern_result_t result={0,0};
 #if(start_line<=15)
