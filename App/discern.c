@@ -2,10 +2,21 @@
 #include "algorithm.h"
 #include <string.h>
 
+/*使用边界提取对图像进行预处理*/
+#define use_get_frame 0
+#if(use_get_frame!=0&&use_get_frame!=1)
+#error image deal mode error
+#endif
+
 /*摄像头硬件*/
+/*warning:由于山外库的BUG，在使用摄像头的时候请勿开启任何编译器优化*/
 
 static pixel_t imgbuff[CAMERA_SIZE];
 static pixel_t img[CAMERA_H*CAMERA_W];
+
+#if(use_get_frame==1)
+static pixel_t frame_img[CAMERA_H*CAMERA_W]={0};
+#endif
 
 static void PORTA_IRQHandler(void)
 {
@@ -62,7 +73,6 @@ static void read_DIPswitch(void)
 static void display_start_end(void);
 void discern_init(void)
 {
-    
     camera_init(imgbuff);
     set_vector_handler(PORTA_VECTORn , PORTA_IRQHandler);   //摄像头场中断
     set_vector_handler(DMA0_VECTORn , DMA0_IRQHandler);     //摄像头DMA中断
@@ -73,18 +83,25 @@ void discern_init(void)
 }
 
 #define start_line 20
-#define end_line (CAMERA_H-5)
+#define end_line (CAMERA_H-1)
 #define base_line 38
+
+#if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
+#error start and end line set error
+#endif
 
 static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H];
     
     boundary_t left_edge,right_edge;
+#if(use_get_frame==1)
+    left_edge=serch_left_black_line_f(image,start_line,end_line,base_line+5);
+    right_edge=serch_right_black_line_f(image,start_line,end_line,base_line-5);
+#else
     left_edge=serch_left_black_line(image,start_line,end_line,base_line+5);
     right_edge=serch_right_black_line(image,start_line,end_line,base_line-5);
-    
-    register count_t count;
+#endif
     
     /*扫描前五行*/
 #if(start_line<=15)
@@ -94,7 +111,12 @@ static local_t* get_midline(pixel_t *image)
         return NULL;
     }
 #endif
-    
+
+    register count_t count;
+    local_t left_lost_start,right_lost_start;
+    count_t left_lost,right_lost;
+    left_lost_start=right_lost_start=0;
+    left_lost=right_lost=0;
     /*补出中线*/
     for(count=start_line;count<=end_line;count++)
     {
@@ -111,6 +133,11 @@ static local_t* get_midline(pixel_t *image)
             {
                 mids[count]=0;
             }
+            if(left_lost==0)
+            {
+                left_lost_start=count;
+            }
+            left_lost++;
         }
         else if(get_left&&!get_right)//右丢失
         {
@@ -119,11 +146,39 @@ static local_t* get_midline(pixel_t *image)
             {
                 mids[count]=79;
             }
+            if(right_lost==0)
+            {
+                right_lost_start=count;
+            }
+            right_lost++;
         }
         else//全丢失
         {
-            ;
+            if(left_lost==0)
+            {
+                left_lost_start=count;
+            }
+            left_lost++;
+            
+            if(right_lost==0)
+            {
+                right_lost_start=count;
+            }
+            right_lost++;
         }
+    }
+    count_t lost_diff=left_lost-right_lost;
+    if(lost_diff>=20)//左侧大片丢失
+    {
+        ;
+    }
+    else if(lost_diff<=-20)//右侧大片丢失
+    {
+        ;
+    }
+    else
+    {
+        ;
     }
     return mids;
 }
@@ -238,12 +293,21 @@ discern_result_t discern(void)
     camera_get_img();//获取图像
     
     img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
-    pixel_t *frame_img=NULL;
-    frame_img=get_frame(img);
-    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示图像
+    
+#if(use_get_frame==1)
+    get_frame(frame_img,img);//使用边界提取
+    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, frame_img);//显示边界图像
+#else
+    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示原始图像
+#endif
     
     local_t *mids;//中线
-    mids=get_midline(frame_img);//链接中线与中线有效标记
+    
+#if(use_get_frame==1)
+    mids=get_midline(frame_img);//使用边界图像
+#else
+    mids=get_midline(img);//使用原始图像
+#endif
     
     static discern_result_t result={0,0};
 #if(start_line<=15)
