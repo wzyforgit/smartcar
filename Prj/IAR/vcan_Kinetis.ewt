@@ -512,10 +512,10 @@
       <name>$PROJ_DIR$\..\..\App\algorithm.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\App\E6A2.c</name>
+      <name>$PROJ_DIR$\..\..\App\discern.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\App\image_deal.c</name>
+      <name>$PROJ_DIR$\..\..\App\E6A2.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\App\LCD.c</name>

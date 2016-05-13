@@ -1,5 +1,5 @@
-#ifndef _IMAGE_DEAL_H_
-#define _IMAGE_DEAL_H_
+#ifndef _DISCERN_H_
+#define _DISCERN_H_
 
 typedef struct
 {

@@ -28,13 +28,14 @@ void init(void)
     discern_init();   //Ê¶±ðÄ£¿é
     
     EnableInterrupts;
+    
+    set_speed(0);
+    set_servo(servo_right,0);
 }
 
 void main(void)
 {
     init();
-    set_speed(0);
-    set_servo(servo_right,0);
     discern_result_t control_result;
     while(1)
     {

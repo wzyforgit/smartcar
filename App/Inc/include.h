@@ -19,7 +19,7 @@ typedef _Bool  flag_t;
 #include "servo.h"
 #include "E6A2.h"
 #include "LCD.h"
-#include "image_deal.h"
+#include "discern.h"
  
 //#include  "MK60_wdog.h"
 #include  "MK60_gpio.h"     //IO¿Ú²Ù×÷
