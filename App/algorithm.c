@@ -2,16 +2,6 @@
 #include "algorithm.h"
 #include <string.h>
 
-#ifdef BLACK
-#undef BLACK
-#endif
-#define BLACK 0
-
-#ifdef WHITE
-#undef WHITE
-#endif
-#define WHITE 255
-
 boundary_t serch_left_black_line(pixel_t *image,local_t start,local_t end,local_t median)
 {
     static local_t left_edge[CAMERA_H]={0};

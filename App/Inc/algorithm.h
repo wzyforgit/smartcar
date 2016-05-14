@@ -1,6 +1,16 @@
 #ifndef _ALGORITHM_H_
 #define _ALGORITHM_H_
 
+#ifdef BLACK
+#undef BLACK
+#endif
+#define BLACK 0
+
+#ifdef WHITE
+#undef WHITE
+#endif
+#define WHITE 255
+
 typedef struct
 {
     local_t *edge;

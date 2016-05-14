@@ -52,6 +52,8 @@ static void DMA0_IRQHandler(void)
 #define low_speed  0x02
 static int32 mode=0;
 
+static traffic traffic_type;
+
 static void read_DIPswitch(void)
 {
     port_init(PTC16, ALT1 | PULLUP );
@@ -92,7 +94,7 @@ void discern_init(void)
 
 static local_t* get_midline(pixel_t *image)
 {
-    static local_t mids[CAMERA_H];
+    static local_t mids[CAMERA_H]={0};
     
     boundary_t left_edge,right_edge;
 #if(use_get_frame==1)
@@ -170,47 +172,95 @@ static local_t* get_midline(pixel_t *image)
     count_t lost_diff=left_lost-right_lost;
     if(lost_diff>=20)//×ó²à´óÆ¬¶ªÊ§
     {
-        ;
+        count_t done=0;
+        for(count=start_line;count<=start_line+5;count++)
+        {
+            local_t x=mids[count];
+            if(x<20)
+            {
+                traffic_type=curve;
+                break;
+            }
+            if(image[x-9]==BLACK&&image[x-10]==BLACK&&image[x-11]==BLACK)
+            {
+                if(image[x-17]==WHITE&&image[x-18]==WHITE&&image[x-19]==WHITE)
+                {
+                    done++;
+                }
+            }
+        }
+        if(done>=3)
+        {
+            least_square(end_line-10,end_line,
+                         start_line,end_line,
+                         mids
+                         );
+            traffic_type=crossing;
+        }
     }
     else if(lost_diff<=-20)//ÓÒ²à´óÆ¬¶ªÊ§
     {
-        ;
+        count_t done=0;
+        for(count=start_line;count<=start_line+5;count++)
+        {
+            local_t x=mids[count];
+            if(x>60)
+            {
+                traffic_type=curve;
+                break;
+            }
+            if(image[x+9]==BLACK&&image[x+10]==BLACK&&image[x+11]==BLACK)
+            {
+                if(image[x+17]==WHITE&&image[x+18]==WHITE&&image[x+19]==WHITE)
+                {
+                    done++;
+                }
+            }
+        }
+        if(done>=3)
+        {
+            least_square(end_line-10,end_line,
+                         start_line,end_line,
+                         mids
+                         );
+            traffic_type=crossing;
+        }
     }
     else
     {
-        ;
+        traffic_type=beeline;
     }
     return mids;
 }
 
 static void display_start_end(void)
 {
-    Site_t lines[CAMERA_W+20];
+    Site_t lines[20];
     register count_t count;
-    for(count=0;count<CAMERA_W+20;count++)
+    for(count=CAMERA_W;count<CAMERA_W+20;count++)
     {
-        lines[count].x=count;
-        lines[count].y=start_line-1;
+        lines[count-CAMERA_W].x=count;
+        lines[count-CAMERA_W].y=start_line-1;
     }
-    LCD_points(lines,CAMERA_W+20,BLUE);
-    for(count=0;count<CAMERA_W+20;count++)
+    LCD_points(lines,20,BLUE);
+    for(count=CAMERA_W;count<CAMERA_W+20;count++)
     {
-        lines[count].x=count;
-        lines[count].y=end_line+1;
+        lines[count-CAMERA_W].x=count;
+        lines[count-CAMERA_W].y=end_line+1;
     }
-    LCD_points(lines,CAMERA_W+20,BLUE);
+    LCD_points(lines,20,BLUE);
 }
 
 static void display_lines(local_t start,local_t end,local_t *lines)
 {
-    Site_t line_site[CAMERA_H];
-    register count_t count;
-    for(count=start;count<=end;count++)
+    Site_t line_site[end-start+1];
+    register count_t count,line_count;
+    for(count=start,line_count=0;count<=end;count++,line_count++)
     {
-        line_site[count].x=lines[count];
-        line_site[count].y=count;
+        line_site[line_count].x=lines[count];
+        line_site[line_count].y=count;
     }
-    LCD_points(line_site+start,count,RED);
+    LCD_points(line_site,count,RED);
 }
 
 static speed_t speed_choose(traffic choose)
@@ -282,7 +332,7 @@ static discern_result_t compute_result(local_t *mids)
 {
     discern_result_t result={0,0};
     
-    result.speed=speed_choose(beeline);
+    result.speed=speed_choose(traffic_type);
     five_point_smooth(start_line,end_line,mids);
     result.angle=get_average_mid(start_line,end_line,mids)-base_line;
     return result;

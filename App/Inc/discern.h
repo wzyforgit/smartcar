@@ -9,9 +9,9 @@ typedef struct
 
 typedef enum
 {
-    curve,
-    beeline,
-    crossing
+    curve,      //弯道
+    beeline,    //直线
+    crossing    //十字
 }traffic;
 
 extern void discern_init(void);
