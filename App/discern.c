@@ -271,7 +271,7 @@ static speed_t speed_choose(traffic choose)
         case high_speed:
         switch(choose)
         {
-            case curve   :speed=200;break;
+            case curve   :speed=100;break;
             case beeline :speed=100;break;
             case crossing:speed=100;break;
             default      :speed=100;break;
@@ -281,14 +281,14 @@ static speed_t speed_choose(traffic choose)
         case low_speed:
         switch(choose)
         {
-            case curve   :speed=200;break;
+            case curve   :speed=100;break;
             case beeline :speed=100;break;
             case crossing:speed=100;break;
             default      :speed=100;break;
         }
         break;
         
-        default:speed=300;
+        default:speed=100;
     }
     return speed;
 }
@@ -296,12 +296,12 @@ static speed_t speed_choose(traffic choose)
 local_t get_average_mid(local_t start,local_t end,local_t *mids)
 {
     static const double weight[CAMERA_H]={
-        2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.6,
-        2.6 ,2.6 ,2.6 ,2.6 ,2.6 ,2.56,2.52,2.48,2.44,2.4,      
-        2.36,2.32,2.3 ,2.26,2.22,2.18,2.14,2.1,2.06,2.02,
-        1.98,1.94,1.9 ,1.86,1.82,1.78,1.74,1.7,1.66,1.62,
-        1.58,1.54,1.5 ,1.47,1.42,1.38,1.34,1.3,1.26,1.22,
-        1.18,1.14,1.10,1.07,1.03,1.0 ,1.0 ,1.0,1.0 ,1.0
+	1,1.04,1.08,1.12,1.16,1.2,1.24,1.28,1.32,1.36,1.4,
+	1.44,1.48,1.52,1.56,1.6,1.64,1.68,1.72,1.76,1.8,
+	1.84,1.88,1.92,1.96,2,2.04,2.08,2.12,2.16,2.2,
+	2.24,2.28,2.32,2.36,2.4,2.44,2.48,2.52,2.56,2.6,
+	2.64,2.68,2.72,2.76,2.8,2.84,2.88,2.92,2.96,3,
+	3.04,3.08,3.12,3.16,3.2,3.24,3.28,3.32,3.36,
     };
     
     register count_t count;
