@@ -23,7 +23,9 @@ void init(void)
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);//中断优先级组
     motor_init();     //电机
     servo_init();     //舵机
+#if(motor_control==1)
     E6A2_init();      //编码器
+#endif
     LCD_init();       //LCD屏
     discern_init();   //识别模块
     
@@ -41,7 +43,11 @@ void main(void)
     {
         control_result=discern();
         set_angle(control_result.angle);
+#if(motor_control==1)
         set_speed(control_result.speed);
         LCD_printf(0,95,"%5d  %5d",control_result.angle,control_result.speed);
+#else
+        set_speed(700);
+#endif
     }
 }

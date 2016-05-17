@@ -96,6 +96,7 @@ static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H]={0};
     
+    /*获取基本信息*/
     boundary_t left_edge,right_edge;
 #if(use_get_frame==1)
     left_edge=serch_left_black_line_f(image,start_line,end_line,base_line+5);
@@ -115,9 +116,7 @@ static local_t* get_midline(pixel_t *image)
 #endif
 
     register count_t count;
-    local_t left_lost_start,right_lost_start;
     count_t left_lost,right_lost;
-    left_lost_start=right_lost_start=0;
     left_lost=right_lost=0;
     /*补出中线*/
     for(count=start_line;count<=end_line;count++)
@@ -131,44 +130,54 @@ static local_t* get_midline(pixel_t *image)
         else if(!get_left&&get_right)//左丢失
         {
             mids[count]=(local_t)(right_edge.edge[count]-base_line/2);
+            left_edge.edge[count]=mids[count]-base_line/2;
             if(mids[count]>=80)
             {
                 mids[count]=0;
-            }
-            if(left_lost==0)
-            {
-                left_lost_start=count;
             }
             left_lost++;
         }
         else if(get_left&&!get_right)//右丢失
         {
             mids[count]=(local_t)(left_edge.edge[count]+base_line/2);
+            right_edge.edge[count]=mids[count]+base_line/2;
             if(mids[count]>=80)
             {
                 mids[count]=79;
-            }
-            if(right_lost==0)
-            {
-                right_lost_start=count;
             }
             right_lost++;
         }
         else//全丢失
         {
-            if(left_lost==0)
-            {
-                left_lost_start=count;
-            }
             left_lost++;
-            
-            if(right_lost==0)
-            {
-                right_lost_start=count;
-            }
             right_lost++;
         }
     }
+    
+    /*路况判断*/
+    
+    /*起跑线*/
+    static flag_t f_start=1;
+    if(is_start(start_line,end_line,left_edge,right_edge))
+    {
+        if(f_start==1)
+        {
+            traffic_type=beeline;
+            return mids;
+        }
+        else
+        {
+            set_motor(motor_back,0);
+            while(1);
+        }
+    }
+    
+    if(f_start==1)
+    {
+        f_start=0;
+    }
+    
+    /*十字，直线，弯道*/
     count_t lost_diff=left_lost-right_lost;
     if(lost_diff>=20)//左侧大片丢失
     {

@@ -166,3 +166,55 @@ void get_frame(pixel_t *dst,pixel_t *src)
 		}
 	}
 }
+
+/*起跑线识别*/
+#ifdef offset
+#undef offset
+#endif
+#define offset 15
+/*由于摄像头的二值化，偏移量应该在能看见起跑线的行数内*/
+flag_t is_start(local_t start,local_t end,boundary_t left_edge,boundary_t right_edge)
+{
+    register count_t row,count;
+    local_t edge_diff[offset+1];
+    for(row=end-offset,count=0;row<=end;row++,count++)//空间换时间
+    {
+        edge_diff[count]=right_edge.edge[row]-left_edge.edge[row];
+    }
+    
+    flag_t before=0;
+    for(count=1;count<=offset-3;count++)
+    {
+        if(abs(edge_diff[count]-edge_diff[count-1])>10)
+        {
+            if(abs(edge_diff[count]-edge_diff[count+1])<3 &&
+               abs(edge_diff[count]-edge_diff[count+2])<5 &&
+               abs(edge_diff[count]-edge_diff[count+3])<7)
+            {
+                before=1;
+                break;
+            }
+        }
+    }
+    
+    if(before==0)
+    {
+        return 0;
+    }
+    
+    local_t back_end=count+4;
+    for(count=offset;count>=back_end;count--)
+    {
+        if(abs(edge_diff[count]-edge_diff[count+1])>10)
+        {
+            if(abs(edge_diff[count]-edge_diff[count-1])<3 &&
+               abs(edge_diff[count]-edge_diff[count-2])<5 &&
+               abs(edge_diff[count]-edge_diff[count-3])<7)
+            {
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}

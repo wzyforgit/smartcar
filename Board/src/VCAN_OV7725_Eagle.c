@@ -25,9 +25,9 @@
 #define OV7725_EAGLE_Delay_ms(time)  DELAY_MS(time)
 
 
-uint8   *ov7725_eagle_img_buff;
+volatile uint8 *ov7725_eagle_img_buff;
 
-volatile IMG_STATUS_e      ov7725_eagle_img_flag = IMG_FINISH;   //Í¼Ïñ×´Ì¬
+volatile IMG_STATUS_e ov7725_eagle_img_flag = IMG_FINISH;   //Í¼Ïñ×´Ì¬
 
 //ÄÚ²¿º¯ÊýÉùÃ÷
 static uint8 ov7725_eagle_reg_init(void);
@@ -202,7 +202,7 @@ reg_s ov7725_eagle_reg[] =
     {OV7725_BDMStep      , 0x03},
     {OV7725_SDE          , 0x04},
     {OV7725_BRIGHT       , 0x00},
-    {OV7725_CNST         , 0xFF},
+    {OV7725_CNST         , threshold},//ãÐÖµ
     {OV7725_SIGN         , 0x06},
     {OV7725_UVADJ0       , 0x11},
     {OV7725_UVADJ1       , 0x02},

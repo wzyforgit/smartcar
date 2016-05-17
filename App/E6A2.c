@@ -1,6 +1,8 @@
 #include "include.h"
 #include <math.h>
 
+#if(motor_control==1)
+
 #define quad_module     FTM2
 
 /*为了不影响图像采集和显示，推荐不要小于20*/
@@ -12,11 +14,6 @@ static volatile speed_t goal_speed=0;
 speed_t get_speed(void)
 {
     return motor_speed;
-}
-
-void set_speed(speed_t want_speed)
-{
-    goal_speed=want_speed;
 }
 
 #define P 2
@@ -77,4 +74,22 @@ void E6A2_init(void)
     set_vector_handler(PIT0_VECTORn ,PIT0_IRQHandler);          //设置PIT0的中断服务函数为 PIT0_IRQHandler
     NVIC_SetPriority(PIT0_IRQn,2);
     enable_irq (PIT0_IRQn);                                     //使能PIT0中断
+}
+
+#endif//motor_control
+
+void set_speed(speed_t want_speed)
+{
+#if(motor_control==1)
+    goal_speed=want_speed;
+#else
+    if(want_speed>0)
+    {
+        set_motor(motor_forward,(speed_t)(want_speed));
+    }
+    else
+    {
+        set_motor(motor_back,(speed_t)(-want_speed));
+    }
+#endif
 }

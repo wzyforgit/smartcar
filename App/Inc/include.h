@@ -7,7 +7,7 @@
 typedef uint32 duty_t;
 typedef int16 angle_t;
 typedef int16 speed_t;
-typedef uint8  local_t;
+typedef uint8 local_t;
 typedef uint8 pixel_t;
 typedef int32 count_t;
 typedef _Bool  flag_t;
