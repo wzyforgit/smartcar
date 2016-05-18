@@ -21,11 +21,10 @@
 #include "VCAN_camera.h"
 
 
-
 #define OV7725_EAGLE_Delay_ms(time)  DELAY_MS(time)
 
 
-volatile uint8 *ov7725_eagle_img_buff;
+uint8 *ov7725_eagle_img_buff;
 
 volatile IMG_STATUS_e ov7725_eagle_img_flag = IMG_FINISH;   //图像状态
 
@@ -86,7 +85,6 @@ void ov7725_eagle_vsync(void)
         DMA_EN(CAMERA_DMA_CH);                  //使能通道CHn 硬件请求
         PORTA_ISFR = 1 <<  PT27;            //清空PCLK标志位
         DMA_DADDR(CAMERA_DMA_CH) = (uint32)ov7725_eagle_img_buff;    //恢复地址
-
 #else
         PORTA_ISFR = 1 <<  PT27;            //清空PCLK标志位
         dma_repeat(CAMERA_DMA_CH, (void *)&PTB_B0_IN, (void *)ov7725_eagle_img_buff,CAMERA_DMA_NUM);

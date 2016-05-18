@@ -16,6 +16,14 @@
 
 #include "include.h"
 
+void LED_init(void)
+{
+    led_init(LED0);
+    led_init(LED1);
+    led_init(LED2);
+    led_init(LED3);
+}
+
 void init(void)
 {
     DisableInterrupts;
@@ -28,6 +36,7 @@ void init(void)
 #endif
     LCD_init();       //LCDÆÁ
     discern_init();   //Ê¶±ðÄ£¿é
+    LED_init();
     
     EnableInterrupts;
     

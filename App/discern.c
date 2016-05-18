@@ -2,21 +2,11 @@
 #include "algorithm.h"
 #include <string.h>
 
-/*使用边界提取对图像进行预处理*/
-#define use_get_frame 0
-#if(use_get_frame!=0&&use_get_frame!=1)
-#error image deal mode error
-#endif
-
 /*摄像头硬件*/
 /*warning:由于山外库的BUG，在使用摄像头的时候请勿开启任何编译器优化*/
 
 static pixel_t imgbuff[CAMERA_SIZE];
 static pixel_t img[CAMERA_H*CAMERA_W];
-
-#if(use_get_frame==1)
-static pixel_t frame_img[CAMERA_H*CAMERA_W]={0};
-#endif
 
 static void PORTA_IRQHandler(void)
 {
@@ -26,7 +16,7 @@ static void PORTA_IRQHandler(void)
     while(!PORTA_ISFR);
     flag = PORTA_ISFR;
     PORTA_ISFR  = ~0;             //清中断标志位
-
+    
     n = 29;                       //场中断
     if(flag & (1 << n))           //PTA29触发中断
     {
@@ -98,13 +88,8 @@ static local_t* get_midline(pixel_t *image)
     
     /*获取基本信息*/
     boundary_t left_edge,right_edge;
-#if(use_get_frame==1)
-    left_edge=serch_left_black_line_f(image,start_line,end_line,base_line+5);
-    right_edge=serch_right_black_line_f(image,start_line,end_line,base_line-5);
-#else
     left_edge=serch_left_black_line(image,start_line,end_line,base_line+5);
     right_edge=serch_right_black_line(image,start_line,end_line,base_line-5);
-#endif
     
     /*扫描前五行*/
 #if(start_line<=15)
@@ -162,18 +147,22 @@ static local_t* get_midline(pixel_t *image)
     {
         if(f_start==1)
         {
+            led(LED0,LED_ON);
             traffic_type=beeline;
             return mids;
         }
         else
         {
             set_motor(motor_back,0);
+            DisableInterrupts;
+            led(LED1,LED_ON);
             while(1);
         }
     }
     
     if(f_start==1)
     {
+        led(LED0,LED_OFF);
         f_start=0;
     }
     
@@ -353,20 +342,11 @@ discern_result_t discern(void)
     
     img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
     
-#if(use_get_frame==1)
-    get_frame(frame_img,img);//使用边界提取
-    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, frame_img);//显示边界图像
-#else
     LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示原始图像
-#endif
     
     local_t *mids;//中线
     
-#if(use_get_frame==1)
-    mids=get_midline(frame_img);//使用边界图像
-#else
     mids=get_midline(img);//使用原始图像
-#endif
     
     static discern_result_t result={0,0};
 #if(start_line<=15)
