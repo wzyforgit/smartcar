@@ -2,77 +2,107 @@
 #include "algorithm.h"
 #include <string.h>
 
-boundary_t serch_left_black_line(pixel_t *image,local_t start,local_t end,local_t median)
+static local_t serch_left_black_line(pixel_t *image,local_t line,local_t median)
+{
+    image=image+line*CAMERA_W;
+    register count_t x;
+    for(x=median;x>2;x--)
+    {
+        if(image[x]==BLACK)
+        {
+            if(image[x-1]==BLACK &&
+               image[x-2]==BLACK &&
+               image[x-3]==BLACK)
+            {
+                if(image[x+1]==WHITE &&
+                   image[x+2]==WHITE &&
+                   image[x+3]==WHITE)
+                {
+                    return x;
+                }
+            }
+            else
+            {
+                x--;
+                continue;
+            }
+        }
+    }
+    return 81;
+}
+
+static local_t serch_right_black_line(pixel_t *image,local_t line,local_t median)
+{
+    image=image+line*CAMERA_W;
+    register count_t x;
+    for(x=median;x<CAMERA_W-3;x++)
+    {
+        if(image[x]==BLACK)
+        {
+            if(image[x+1]==BLACK &&
+               image[x+2]==BLACK &&
+               image[x+3]==BLACK)
+            {
+                if(image[x-1]==WHITE &&
+                   image[x-2]==WHITE &&
+                   image[x-3]==WHITE)
+                {
+                    return x;
+                }
+            }
+            else
+            {
+                x++;
+                continue;
+            }
+        }
+    }
+    return 81;
+}
+
+boundary_t serch_left_edge(pixel_t *image,local_t start,local_t end,local_t median)
 {
     static local_t left_edge[CAMERA_H]={0};
     static flag_t left_edge_flag[CAMERA_H]={0};
     static boundary_t left_edges={left_edge,left_edge_flag};
-    register count_t x,y;
+    register count_t y;
     memset(left_edge_flag,0,sizeof(flag_t)*CAMERA_H);
     
     for(y=start;y<=end;y++)
     {
-        for(x=median;x>2;x--)
+        local_t temp=serch_left_black_line(image,y,median);
+        if(temp>=80)
         {
-            if(image[y*CAMERA_W+x]==BLACK)
-            {
-                if(image[y*CAMERA_W+x-1]==BLACK &&
-                   image[y*CAMERA_W+x-2]==BLACK &&
-                   image[y*CAMERA_W+x-3]==BLACK)
-                {
-                    if(image[y*CAMERA_W+x+1]==WHITE &&
-                       image[y*CAMERA_W+x+2]==WHITE &&
-                       image[y*CAMERA_W+x+3]==WHITE)
-                    {
-                        left_edge[y]=x;
-                        left_edge_flag[y]=1;
-                        break;
-                    }
-                }
-                else
-                {
-                    x--;
-                    continue;
-                }
-            }
+            continue;
+        }
+        else
+        {
+            left_edge[y]=temp;
+            left_edge_flag[y]=1;
         }
     }
     return left_edges;
 }
 
-boundary_t serch_right_black_line(pixel_t *image,local_t start,local_t end,local_t median)
+boundary_t serch_right_edge(pixel_t *image,local_t start,local_t end,local_t median)
 {
     static local_t right_edge[CAMERA_H]={0};
     static flag_t right_edge_flag[CAMERA_H]={0};
     static boundary_t right_edges={right_edge,right_edge_flag};
-    register count_t x,y;
+    register count_t y;
     memset(right_edge_flag,0,sizeof(flag_t)*CAMERA_H);
     
     for(y=start;y<=end;y++)
     {
-        for(x=median;x<CAMERA_W-3;x++)
+        local_t temp=serch_right_black_line(image,y,median);
+        if(temp>=80)
         {
-            if(image[y*CAMERA_W+x]==BLACK)
-            {
-                if(image[y*CAMERA_W+x+1]==BLACK &&
-                   image[y*CAMERA_W+x+2]==BLACK &&
-                   image[y*CAMERA_W+x+3]==BLACK)
-                {
-                    if(image[y*CAMERA_W+x-1]==WHITE &&
-                       image[y*CAMERA_W+x-2]==WHITE &&
-                       image[y*CAMERA_W+x-3]==WHITE)
-                    {
-                        right_edge[y]=x;
-                        right_edge_flag[y]=1;
-                        break;
-                    }
-                }
-                else
-                {
-                    x++;
-                    continue;
-                }
-            }
+            continue;
+        }
+        else
+        {
+            right_edge[y]=temp;
+            right_edge_flag[y]=1;
         }
     }
     return right_edges;
@@ -121,53 +151,44 @@ double least_square(const local_t end,const local_t start,const local_t map_star
 }
 
 /*起跑线识别*/
-#ifdef offset
-#undef offset
+#ifdef end_offset
+#undef end_offset
 #endif
-#define offset 15
+#define end_offset 10
 /*由于摄像头的二值化，偏移量应该在能看见起跑线的行数内*/
-flag_t is_start(local_t start,local_t end,boundary_t left_edge,boundary_t right_edge)
+flag_t is_start(pixel_t *image,local_t start,local_t end)
 {
-    register count_t row,count;
-    local_t edge_diff[offset+1];
-    for(row=end-offset,count=0;row<=end;row++,count++)//空间换时间
-    {
-        edge_diff[count]=right_edge.edge[row]-left_edge.edge[row];
-    }
+    local_t offset=(end-start)>end_offset?end_offset:(end-start);
     
-    flag_t before=0;
-    for(count=1;count<=offset-3;count++)
+    register count_t y;
+    register count_t line;
+    for(y=end;y>end-offset;y--)
     {
-        if(abs(edge_diff[count]-edge_diff[count-1])>10)
+        local_t left=serch_left_black_line(image,y,CAMERA_W/2);
+        if(left>=80||left<9)
         {
-            if(abs(edge_diff[count]-edge_diff[count+1])<3 &&
-               abs(edge_diff[count]-edge_diff[count+2])<5 &&
-               abs(edge_diff[count]-edge_diff[count+3])<7)
-            {
-                before=1;
-                break;
-            }
+            continue;
+        }
+        local_t right=serch_right_black_line(image,y,CAMERA_W/2);
+        if(right>=80||right>CAMERA_W-1-9)
+        {
+            continue;
+        }
+        
+        line=y*CAMERA_W;
+        if(image[line+left-3]==BLACK&&image[line+left-4]==BLACK &&
+           image[line+left-8]==WHITE&&image[line+left-9]==WHITE &&
+           image[line+right+3]==BLACK&&image[line+right+4]==BLACK &&
+           image[line+right+8]==WHITE&&image[line+right+9]==WHITE
+           )
+        {
+            return 1;
+        }
+        else
+        {
+            continue;
         }
     }
-    
-    if(before==0)
-    {
-        return 0;
-    }
-    
-    local_t back_end=count+4;
-    for(count=offset;count>=back_end;count--)
-    {
-        if(abs(edge_diff[count]-edge_diff[count+1])>10)
-        {
-            if(abs(edge_diff[count]-edge_diff[count-1])<3 &&
-               abs(edge_diff[count]-edge_diff[count-2])<5 &&
-               abs(edge_diff[count]-edge_diff[count-3])<7)
-            {
-                return 1;
-            }
-        }
-    }
-    
     return 0;
 }
+#undef end_offset

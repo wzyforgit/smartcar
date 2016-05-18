@@ -88,8 +88,8 @@ static local_t* get_midline(pixel_t *image)
     
     /*获取基本信息*/
     boundary_t left_edge,right_edge;
-    left_edge=serch_left_black_line(image,start_line,end_line,base_line+5);
-    right_edge=serch_right_black_line(image,start_line,end_line,base_line-5);
+    left_edge=serch_left_edge(image,start_line,end_line,base_line+5);
+    right_edge=serch_right_edge(image,start_line,end_line,base_line-5);
     
     /*扫描前五行*/
 #if(start_line<=15)
@@ -100,6 +100,32 @@ static local_t* get_midline(pixel_t *image)
     }
 #endif
 
+    /*起跑线*/
+    static flag_t f_start=1;
+    
+    if(is_start(image,start_line,end_line))
+    {
+        if(f_start==1)
+        {
+            led(LED0,LED_ON);
+            traffic_type=beeline;
+            return mids;
+        }
+        else
+        {
+            set_motor(motor_back,0);
+            DisableInterrupts;
+            led(LED1,LED_ON);
+            while(1);
+        }
+    }
+    
+    if(f_start==1)
+    {
+        led(LED0,LED_OFF);
+        f_start=0;
+    }
+    
     register count_t count;
     count_t left_lost,right_lost;
     left_lost=right_lost=0;
@@ -140,31 +166,6 @@ static local_t* get_midline(pixel_t *image)
     }
     
     /*路况判断*/
-    
-    /*起跑线*/
-    static flag_t f_start=1;
-    if(is_start(start_line,end_line,left_edge,right_edge))
-    {
-        if(f_start==1)
-        {
-            led(LED0,LED_ON);
-            traffic_type=beeline;
-            return mids;
-        }
-        else
-        {
-            set_motor(motor_back,0);
-            DisableInterrupts;
-            led(LED1,LED_ON);
-            while(1);
-        }
-    }
-    
-    if(f_start==1)
-    {
-        led(LED0,LED_OFF);
-        f_start=0;
-    }
     
     /*十字，直线，弯道*/
     count_t lost_diff=left_lost-right_lost;

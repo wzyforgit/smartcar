@@ -24,7 +24,7 @@
 
 
 #define USE_CAMERA      CAMERA_OV7725_EAGLE   //选择使用的 摄像头
-#define threshold       0x7F                  //设置阈值（0-0xFF）
+#define threshold       0x5F                  //设置阈值（0-0xFF）
 #if(threshold>0xFF||threshold<0x00)
 #error false threshold
 #endif
