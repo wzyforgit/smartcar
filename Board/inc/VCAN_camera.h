@@ -18,16 +18,35 @@
 #ifndef _VCAN_CAMERA_H_
 #define _VCAN_CAMERA_H_
 
-
 #define CAMERA_OV7725_EAGLE         2       //山外鹰眼
 #define CAMERA_OV7725_WOLF          3       //山外狼眼
 
-
 #define USE_CAMERA      CAMERA_OV7725_EAGLE   //选择使用的 摄像头
-#define threshold       0x5F                  //设置阈值（0-0xFF）
+
+#define threshold       0x85                  //设置阈值（0-0xFF）
 #if(threshold>0xFF||threshold<0x00)
 #error false threshold
-#endif
+#endif//threshold set
+
+#define FrameRate 75
+
+#if(FrameRate==75)
+#define FR1 0x41
+#define FR2 0x00
+
+#elif(FrameRate==112)
+#define FR1 0x81
+#define FR2 0x00
+
+#elif (FrameRate==150)
+#define FR1 0xc1
+#define FR2 0x00
+
+#else
+#error Unknown frame rate
+
+#endif//Frame rate set
+
 typedef struct
 {
     uint8 addr;                 /*寄存器地址*/

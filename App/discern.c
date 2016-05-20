@@ -76,7 +76,7 @@ void discern_init(void)
 
 #define start_line 20
 #define end_line (CAMERA_H-1)
-#define base_line 38
+#define base_line 36
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
 #error start and end line set error

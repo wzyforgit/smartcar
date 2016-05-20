@@ -50,8 +50,6 @@ static void angle_control(angle_t want_angle)
     {
         set_servo(servo_left,(-result));
     }
-    
-    LCD_printf(0,110,"%5d",result);
 }
 
 void set_angle(angle_t angle)

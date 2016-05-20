@@ -132,8 +132,8 @@ void ov7725_eagle_get_img()
 reg_s ov7725_eagle_reg[] =
 {
     //¼Ä´æÆ÷£¬¼Ä´æÆ÷Öµ´Î
-    {OV7725_COM4         , 0xC1},
-    {OV7725_CLKRC        , 0x00},
+    {OV7725_COM4         , FR1},
+    {OV7725_CLKRC        , FR2},//Ö¡ÂÊ
     {OV7725_COM2         , 0x03},
     {OV7725_COM3         , 0xD0},
     {OV7725_COM7         , 0x40},
