@@ -34,21 +34,24 @@ void set_servo(servo_path path,duty_t angle)
 }
 
 #define P_base 42
-#define P (P_base*2.5)
 static void angle_control(angle_t want_angle)
 {
     if(abs(want_angle)<2)
     {
         return;
     }
-    int32 result=(int32)((P*want_angle)+0.5);
-    if(result>=0)
+    double P;
+    if(want_angle>=0)
     {
+        P=P_base*(want_angle*0.075+1);
+        int32 result=(int32)((P*want_angle)+0.5);
         set_servo(servo_right,result);
     }
     else
     {
-        set_servo(servo_left,(-result));
+        P=P_base*(want_angle*0.075-1);
+        int32 result=(int32)((P*want_angle)+0.5);//P和want_angle均为负值
+        set_servo(servo_left,result);
     }
 }
 

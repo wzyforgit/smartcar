@@ -6,17 +6,15 @@ static local_t serch_left_black_line(pixel_t *image,local_t line,local_t median)
 {
     image=image+line*CAMERA_W;
     register count_t x;
-    for(x=median;x>2;x--)
+    for(x=median;x>1;x--)
     {
         if(image[x]==BLACK)
         {
             if(image[x-1]==BLACK &&
-               image[x-2]==BLACK &&
-               image[x-3]==BLACK)
+               image[x-2]==BLACK)
             {
                 if(image[x+1]==WHITE &&
-                   image[x+2]==WHITE &&
-                   image[x+3]==WHITE)
+                   image[x+2]==WHITE)
                 {
                     return x;
                 }
@@ -35,17 +33,15 @@ static local_t serch_right_black_line(pixel_t *image,local_t line,local_t median
 {
     image=image+line*CAMERA_W;
     register count_t x;
-    for(x=median;x<CAMERA_W-3;x++)
+    for(x=median;x<CAMERA_W-2;x++)
     {
         if(image[x]==BLACK)
         {
             if(image[x+1]==BLACK &&
-               image[x+2]==BLACK &&
-               image[x+3]==BLACK)
+               image[x+2]==BLACK)
             {
                 if(image[x-1]==WHITE &&
-                   image[x-2]==WHITE &&
-                   image[x-3]==WHITE)
+                   image[x-2]==WHITE)
                 {
                     return x;
                 }

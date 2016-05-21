@@ -77,6 +77,7 @@ void discern_init(void)
 #define start_line 20
 #define end_line (CAMERA_H-1)
 #define base_line 36
+#define edge_offset (base_line+13)
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
 #error start and end line set error
@@ -88,8 +89,8 @@ static local_t* get_midline(pixel_t *image)
     
     /*获取基本信息*/
     boundary_t left_edge,right_edge;
-    left_edge=serch_left_edge(image,start_line,end_line,base_line+5);
-    right_edge=serch_right_edge(image,start_line,end_line,base_line-5);
+    left_edge=serch_left_edge(image,start_line,end_line,base_line+15);
+    right_edge=serch_right_edge(image,start_line,end_line,base_line-15);
     
     /*扫描前五行*/
 #if(start_line<=15)
@@ -140,8 +141,8 @@ static local_t* get_midline(pixel_t *image)
         }
         else if(!get_left&&get_right)//左丢失
         {
-            mids[count]=(local_t)(right_edge.edge[count]-base_line/2);
-            left_edge.edge[count]=mids[count]-base_line/2;
+            mids[count]=(local_t)(right_edge.edge[count]-edge_offset/2);
+            left_edge.edge[count]=mids[count]-edge_offset/2;
             if(mids[count]>=80)
             {
                 mids[count]=0;
@@ -150,8 +151,8 @@ static local_t* get_midline(pixel_t *image)
         }
         else if(get_left&&!get_right)//右丢失
         {
-            mids[count]=(local_t)(left_edge.edge[count]+base_line/2);
-            right_edge.edge[count]=mids[count]+base_line/2;
+            mids[count]=(local_t)(left_edge.edge[count]+edge_offset/2);
+            right_edge.edge[count]=mids[count]+edge_offset/2;
             if(mids[count]>=80)
             {
                 mids[count]=79;
@@ -259,7 +260,7 @@ static void display_lines(local_t start,local_t end,local_t *lines)
         line_site[line_count].x=lines[count];
         line_site[line_count].y=count;
     }
-    LCD_points(line_site,count,RED);
+    LCD_points(line_site,end-start+1,RED);
 }
 
 static speed_t speed_choose(traffic choose)
@@ -292,7 +293,7 @@ static speed_t speed_choose(traffic choose)
     return speed;
 }
 
-local_t get_average_mid(local_t start,local_t end,local_t *mids)
+static local_t get_average_mid(local_t start,local_t end,local_t *mids,pixel_t *image)
 {
     static const double weight[CAMERA_H]={
 	1,1.04,1.08,1.12,1.16,1.2,1.24,1.28,1.32,1.36,1.4,
@@ -301,17 +302,24 @@ local_t get_average_mid(local_t start,local_t end,local_t *mids)
 	2.24,2.28,2.32,2.36,2.4,2.44,2.48,2.52,2.56,2.6,
 	2.64,2.68,2.72,2.76,2.8,2.84,2.88,2.92,2.96,3,
 	3.04,3.08,3.12,3.16,3.2,3.24,3.28,3.32,3.36,
-    };
+    };//y=0.04x+1
     
     register count_t count;
-    double mid_result=0;
-    double div=0;
-    for(count=start;count<=end;count++)
+    double mid_result;
+    double div;
+    mid_result=(mids[end]*weight[end]+mids[end-1]*weight[end-1]);
+    div=weight[end]+weight[end-1];
+    for(count=end-2;count>=start;count--)
     {
+        if((image[mids[count]]==BLACK&&image[mids[count-1]]==BLACK&&image[mids[count-2]]==BLACK) ||
+           (abs(mids[count]-mids[count+1])>=7&&abs(mids[count+1]-mids[count+2])>=7))
+        {
+            break;
+        }
         mid_result+=(mids[count]*weight[count]);
         div+=weight[count];
     }
-    
+    display_lines(count+1,end,mids);//显示中线
     double result=mid_result/div+0.5;
     if(result<0)
     {
@@ -327,13 +335,13 @@ local_t get_average_mid(local_t start,local_t end,local_t *mids)
     }
 }
 
-static discern_result_t compute_result(local_t *mids)
+static discern_result_t compute_result(local_t *mids,pixel_t *image)
 {
     discern_result_t result={0,0};
     
     result.speed=speed_choose(traffic_type);
     five_point_smooth(start_line,end_line,mids);
-    result.angle=get_average_mid(start_line,end_line,mids)-base_line;
+    result.angle=get_average_mid(start_line,end_line,mids,image)-base_line;
     return result;
 }
 
@@ -356,8 +364,7 @@ discern_result_t discern(void)
         return result;
     }
 #endif
-    result=compute_result(mids);//计算偏角，速度选择
+    result=compute_result(mids,img);//计算偏角，速度选择
     
-    display_lines(start_line,end_line,mids);//显示有效的中线
     return result;//返回识别结果
 }
