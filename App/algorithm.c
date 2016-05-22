@@ -26,7 +26,7 @@ static local_t serch_left_black_line(pixel_t *image,local_t line,local_t median)
             }
         }
     }
-    return 81;
+    return CAMERA_W;
 }
 
 static local_t serch_right_black_line(pixel_t *image,local_t line,local_t median)
@@ -53,7 +53,7 @@ static local_t serch_right_black_line(pixel_t *image,local_t line,local_t median
             }
         }
     }
-    return 81;
+    return CAMERA_W;
 }
 
 boundary_t serch_left_edge(pixel_t *image,local_t start,local_t end,local_t median)
@@ -67,7 +67,7 @@ boundary_t serch_left_edge(pixel_t *image,local_t start,local_t end,local_t medi
     for(y=start;y<=end;y++)
     {
         local_t temp=serch_left_black_line(image,y,median);
-        if(temp>=80)
+        if(temp>=CAMERA_W)
         {
             continue;
         }
@@ -91,7 +91,7 @@ boundary_t serch_right_edge(pixel_t *image,local_t start,local_t end,local_t med
     for(y=start;y<=end;y++)
     {
         local_t temp=serch_right_black_line(image,y,median);
-        if(temp>=80)
+        if(temp>=CAMERA_W)
         {
             continue;
         }
@@ -150,39 +150,86 @@ double least_square(const local_t end,const local_t start,const local_t map_star
 #ifdef end_offset
 #undef end_offset
 #endif
-#define end_offset 10
+#define end_offset 5
 /*ÓÉÓÚÉãÏñÍ·µÄ¶þÖµ»¯£¬Æ«ÒÆÁ¿Ó¦¸ÃÔÚÄÜ¿´¼ûÆðÅÜÏßµÄÐÐÊýÄÚ*/
-flag_t is_start(pixel_t *image,local_t start,local_t end)
+
+flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
 {
-    local_t offset=(end-start)>end_offset?end_offset:(end-start);
-    
-    register count_t y;
-    register count_t line;
-    for(y=end;y>end-offset;y--)
+    local_t status;
+    status=serch_left_black_line(image,line,median);
+    if(status>=CAMERA_W||status<median-15)//×óºÚ·½¿éÓÒ²à¶ªÊ§
     {
-        local_t left=serch_left_black_line(image,y,CAMERA_W/2);
-        if(left>=80||left<9)
+        return 0;
+    }
+    
+    image=line*CAMERA_W;
+    register count_t x;
+    for(x=status;x>status-20&&x>1;x--)//Ñ°ÕÒ×óºÚ¿é×ó²à
+    {
+        if(image[x]==WHITE&&image[x-1]==WHITE&&image[x-2]==WHITE)
         {
-            continue;
+            status=x;
+            break;
         }
-        local_t right=serch_right_black_line(image,y,CAMERA_W/2);
-        if(right>=80||right>CAMERA_W-1-9)
-        {
-            continue;
-        }
-        
-        line=y*CAMERA_W;
-        if(image[line+left-3]==BLACK&&image[line+left-4]==BLACK &&
-           image[line+left-8]==WHITE&&image[line+left-9]==WHITE &&
-           image[line+right+3]==BLACK&&image[line+right+4]==BLACK &&
-           image[line+right+8]==WHITE&&image[line+right+9]==WHITE
-           )
+    }
+    if(x==status-20||x<=1)//×óºÚ·½¿é×ó²à¶ªÊ§
+    {
+        return 0;
+    }
+    
+    for(x=status;x>1;x--)//Ñ°ÕÒ×ó±ß½ç
+    {
+        if(image[x]==BLACK&&image[x-1]==BLACK&&image[x-2]==BLACK)
         {
             return 1;
         }
-        else
+    }
+    return 0;
+}
+
+flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median)
+{
+    local_t status;
+    status=serch_right_black_line(image,line,median);
+    if(status>=CAMERA_W||status>median+15)//ÓÒºÚ·½¿é×ó²à¶ªÊ§
+    {
+        return 0;
+    }
+    
+    image=line*CAMERA_W;
+    register count_t x;
+    for(x=status;x<status+20&&x<=CAMERA_W-1;x++)//Ñ°ÕÒÓÒºÚ¿éÓÒ²à
+    {
+        if(image[x]==WHITE&&image[x+1]==WHITE&&image[x+2]==WHITE)
         {
-            continue;
+            status=x;
+            break;
+        }
+    }
+    if(x==status+20||x>=CAMERA_W-1)//ÓÒºÚ·½¿éÓÒ²à¶ªÊ§
+    {
+        return 0;
+    }
+    
+    for(x=status;x<CAMERA_W-2;x++)//Ñ°ÕÒÓÒ±ß½ç
+    {
+        if(image[x]==BLACK&&image[x+1]==BLACK&&image[x+2]==BLACK)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+flag_t is_start(pixel_t *image,local_t end)
+{
+    count_t y;
+    register count_t line;
+    for(y=end;y>end-end_offset;y--)
+    {
+        if(find_left_block=serch_left_black_block(image,y,,CAMERA_W/2) && serch_right_black_block(image,y,,CAMERA_W/2))
+        {
+            return 1;
         }
     }
     return 0;

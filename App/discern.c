@@ -42,8 +42,6 @@ static void DMA0_IRQHandler(void)
 #define low_speed  0x02
 static int32 mode=0;
 
-static traffic traffic_type;
-
 static void read_DIPswitch(void)
 {
     port_init(PTC16, ALT1 | PULLUP );
@@ -74,19 +72,23 @@ void discern_init(void)
     display_start_end();
 }
 
-#define start_line 20
-#define end_line (CAMERA_H-1)
+#define start_line 23
+#define end_line (CAMERA_H-12)
+/*由于镜头污染，所以将end_line提前11个偏移量，后面的竞速组若能购买新的摄像头并调好焦距，可以解除这个偏移量*/
 #define base_line 36
-#define edge_offset (base_line+13)
+#define edge_offset (base_line+15)
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
 #error start and end line set error
 #endif
 
+static traffic traffic_type;
+static local_t effective_start=0;
+
 static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H]={0};
-    
+    effective_start=start_line;
     /*获取基本信息*/
     boundary_t left_edge,right_edge;
     left_edge=serch_left_edge(image,start_line,end_line,base_line+15);
@@ -104,7 +106,7 @@ static local_t* get_midline(pixel_t *image)
     /*起跑线*/
     static flag_t f_start=1;
     
-    if(is_start(image,start_line,end_line))
+    if(is_start(image,CAMERA_H-1))
     {
         if(f_start==1)
         {
@@ -130,6 +132,7 @@ static local_t* get_midline(pixel_t *image)
     register count_t count;
     count_t left_lost,right_lost;
     left_lost=right_lost=0;
+    count_t staggered=0;
     /*补出中线*/
     for(count=start_line;count<=end_line;count++)
     {
@@ -137,7 +140,14 @@ static local_t* get_midline(pixel_t *image)
         flag_t get_right=right_edge.done[count];
         if(get_left&&get_right)//都找到
         {
-            mids[count]=(local_t)(left_edge.edge[count]+right_edge.edge[count])/2;
+            if(right_edge.edge[count]>left_edge.edge[count])
+            {
+                mids[count]=(local_t)(left_edge.edge[count]+right_edge.edge[count])/2;
+            }
+            else
+            {
+                staggered++;
+            }
         }
         else if(!get_left&&get_right)//左丢失
         {
@@ -172,58 +182,26 @@ static local_t* get_midline(pixel_t *image)
     count_t lost_diff=left_lost-right_lost;
     if(lost_diff>=20)//左侧大片丢失
     {
-        count_t done=0;
-        for(count=start_line;count<=start_line+5;count++)
+        traffic_type=curve;
+        for(count=start_line;count<=end_line;count++)
         {
-            local_t x=mids[count];
-            if(x<20)
+            mids[count]-=15;
+            if(mids[count]>=CAMERA_W)
             {
-                traffic_type=curve;
-                break;
+                mids[count]=0;
             }
-            if(image[x-9]==BLACK&&image[x-10]==BLACK&&image[x-11]==BLACK)
-            {
-                if(image[x-17]==WHITE&&image[x-18]==WHITE&&image[x-19]==WHITE)
-                {
-                    done++;
-                }
-            }
-        }
-        if(done>=3)
-        {
-            least_square(end_line-10,end_line,
-                         start_line,end_line,
-                         mids
-                         );
-            traffic_type=crossing;
         }
     }
     else if(lost_diff<=-20)//右侧大片丢失
     {
-        count_t done=0;
-        for(count=start_line;count<=start_line+5;count++)
+        traffic_type=curve;
+        for(count=start_line;count<=end_line;count++)
         {
-            local_t x=mids[count];
-            if(x>60)
+            mids[count]+=15;
+            if(mids[count]>=CAMERA_W)
             {
-                traffic_type=curve;
-                break;
+                mids[count]=CAMERA_W-1;
             }
-            if(image[x+9]==BLACK&&image[x+10]==BLACK&&image[x+11]==BLACK)
-            {
-                if(image[x+17]==WHITE&&image[x+18]==WHITE&&image[x+19]==WHITE)
-                {
-                    done++;
-                }
-            }
-        }
-        if(done>=3)
-        {
-            least_square(end_line-10,end_line,
-                         start_line,end_line,
-                         mids
-                         );
-            traffic_type=crossing;
         }
     }
     else
