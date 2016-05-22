@@ -112,7 +112,7 @@ static local_t* get_midline(pixel_t *image)
         {
             led(LED0,LED_ON);
             traffic_type=beeline;
-            return mids;
+            return NULL;
         }
         else
         {
@@ -335,13 +335,13 @@ discern_result_t discern(void)
     
     mids=get_midline(img);//使用原始图像
     
-    static discern_result_t result={0,0};
-#if(start_line<=15)
+    static discern_result_t result={0,300};
+
     if(mids==NULL)
     {
         return result;
     }
-#endif
+
     result=compute_result(mids,img);//计算偏角，速度选择
     
     return result;//返回识别结果

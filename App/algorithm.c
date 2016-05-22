@@ -153,7 +153,7 @@ double least_square(const local_t end,const local_t start,const local_t map_star
 #define end_offset 5
 /*由于摄像头的二值化，偏移量应该在能看见起跑线的行数内*/
 
-flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
+static flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
 {
     local_t status;
     status=serch_left_black_line(image,line,median);
@@ -162,7 +162,7 @@ flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
         return 0;
     }
     
-    image=line*CAMERA_W;
+    image=image+line*CAMERA_W;
     register count_t x;
     for(x=status;x>status-20&&x>1;x--)//寻找左黑块左侧
     {
@@ -187,7 +187,7 @@ flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
     return 0;
 }
 
-flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median)
+static flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median)
 {
     local_t status;
     status=serch_right_black_line(image,line,median);
@@ -196,7 +196,7 @@ flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median)
         return 0;
     }
     
-    image=line*CAMERA_W;
+    image=image+line*CAMERA_W;
     register count_t x;
     for(x=status;x<status+20&&x<=CAMERA_W-1;x++)//寻找右黑块右侧
     {
@@ -224,10 +224,9 @@ flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median)
 flag_t is_start(pixel_t *image,local_t end)
 {
     count_t y;
-    register count_t line;
     for(y=end;y>end-end_offset;y--)
     {
-        if(find_left_block=serch_left_black_block(image,y,,CAMERA_W/2) && serch_right_black_block(image,y,,CAMERA_W/2))
+        if(serch_left_black_block(image,y,CAMERA_W/2) && serch_right_black_block(image,y,CAMERA_W/2))
         {
             return 1;
         }
