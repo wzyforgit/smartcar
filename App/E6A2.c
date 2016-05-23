@@ -6,7 +6,7 @@
 #define quad_module     FTM2
 
 /*为了不影响图像采集和显示，推荐不要小于20*/
-#define sampling_period 20
+#define sampling_period 100
 
 static volatile speed_t motor_speed=0;
 static volatile speed_t goal_speed=0;
@@ -16,8 +16,9 @@ speed_t get_speed(void)
     return motor_speed;
 }
 
-#define P 2
-#define I 0
+/*Ku=4.5,Tu=3*sampling_period=0.3s*/
+#define P 0.9
+#define I 0.3
 #define D 0
 #define A (P+I+D)
 #define B (P+2*D)
@@ -39,17 +40,17 @@ static void speed_control(void)
     }
     
     int32 result=(int32)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]);
-    LCD_printf(0,80,"%5d  %5d",motor_speed,result);
+//    LCD_printf(0,95,"%5d %5d",_motor_speed,result);
     if(result>0)
     {
-        if(result>(500))
-            result=500;
+        if(result>(800))
+            result=800;
         set_motor(motor_forward,(speed_t)(result));
     }
     else
     {
-        if(result<(-500))
-            result=-500;
+        if(result<(-800))
+            result=-800;
         set_motor(motor_back,(speed_t)(-result));
     }
 }

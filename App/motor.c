@@ -36,11 +36,11 @@ void set_motor(motor_path path,uint32 duty)
     }
     else if(path==motor_back)
     {
-        #if (Inverters==1)
-        ftm_pwm_duty(MOTOR_FTM, MOTOR2_PWM,FTM0_PRECISON);
-        #else
-        ftm_pwm_duty(MOTOR_FTM, MOTOR2_PWM,0);
-        #endif
         ftm_pwm_duty(MOTOR_FTM, MOTOR2_PWM,pwm_out);
+        #if (Inverters==1)
+        ftm_pwm_duty(MOTOR_FTM, MOTOR1_PWM,FTM0_PRECISON);
+        #else
+        ftm_pwm_duty(MOTOR_FTM, MOTOR1_PWM,0);
+        #endif
     }
 }
