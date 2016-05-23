@@ -157,7 +157,7 @@ static flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
 {
     local_t status;
     status=serch_left_black_line(image,line,median);
-    if(status>=CAMERA_W||status<median-15)//×óºÚ·½¿éÓÒ²à¶ªÊ§
+    if(status>=CAMERA_W||status<median-25)//×óºÚ·½¿éÓÒ²à¶ªÊ§
     {
         return 0;
     }
@@ -191,7 +191,7 @@ static flag_t serch_right_black_block(pixel_t *image,local_t line,local_t median
 {
     local_t status;
     status=serch_right_black_line(image,line,median);
-    if(status>=CAMERA_W||status>median+15)//ÓÒºÚ·½¿é×ó²à¶ªÊ§
+    if(status>=CAMERA_W||status>median+25)//ÓÒºÚ·½¿é×ó²à¶ªÊ§
     {
         return 0;
     }
@@ -234,3 +234,67 @@ flag_t is_start(pixel_t *image,local_t end)
     return 0;
 }
 #undef end_offset
+
+flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
+{
+    count_t y;
+    count_t lines=0;
+    for(y=end;y>=start;y--)
+    {
+        if(serch_left_black_block(image,y,CAMERA_W/2+5))
+        {
+            lines++;
+        }
+    }
+    if(lines>=5)
+    {
+        led(LED2,LED_ON);
+        led(LED3,LED_OFF);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
+{
+    count_t y;
+    count_t lines=0;
+    for(y=end;y>=start;y--)
+    {
+        if(serch_right_black_block(image,y,CAMERA_W/2-5))
+        {
+            lines++;
+        }
+    }
+    if(lines>=5)
+    {
+        led(LED2,LED_OFF);
+        led(LED3,LED_ON);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+count_t is_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
+{
+    if(is_left_obstacle(image,start,end,mids))
+    {
+        return LEFT_OBSTACLE;
+    }
+    else if(is_right_obstacle(image,start,end,mids))
+    {
+        return RIGHT_OBSTACLE;
+    }
+    else
+    {
+        led(LED2,LED_OFF);
+        led(LED3,LED_OFF);
+        return NO_OBSTACLE;
+    }
+}

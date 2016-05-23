@@ -83,25 +83,14 @@ void discern_init(void)
 #endif
 
 static traffic traffic_type;
-static local_t effective_start=0;
 
 static local_t* get_midline(pixel_t *image)
 {
     static local_t mids[CAMERA_H]={0};
-    effective_start=start_line;
     /*获取基本信息*/
     boundary_t left_edge,right_edge;
     left_edge=serch_left_edge(image,start_line,end_line,base_line+15);
     right_edge=serch_right_edge(image,start_line,end_line,base_line-15);
-    
-    /*扫描前五行*/
-#if(start_line<=15)
-    if(left_edge.done[start_line]+left_edge.done[start_line+1]+left_edge.done[start_line+2]+left_edge.done[start_line+3]+left_edge.done[start_line+4]<=2 &&
-       right_edge.done[start_line]+right_edge.done[start_line+1]+right_edge.done[start_line+2]+right_edge.done[start_line+3]+right_edge.done[start_line+4]<=2)
-    {
-        return NULL;
-    }
-#endif
 
     /*起跑线*/
     static flag_t f_start=1;
@@ -177,6 +166,47 @@ static local_t* get_midline(pixel_t *image)
     }
     
     /*路况判断*/
+    
+    /*障碍物*/
+    static count_t f_obstacle=NO_OBSTACLE;
+    static count_t obstacle_keep=0;
+    f_obstacle=is_obstacle(image,start_line+10,CAMERA_H-1,mids);
+    if(f_obstacle!=NO_OBSTACLE)
+    {
+        count_t total=0;
+        obstacle_keep=1;
+        for(count=start_line;count<=end_line;count++)
+        {
+            total+=mids[count];
+        }
+        if(f_obstacle==LEFT_OBSTACLE)//左障碍
+        {
+            total=total/(end_line-start_line+1)+10;
+        }
+        else//右障碍
+        {
+            total=total/(end_line-start_line+1)-8;
+        }
+        for(count=start_line;count<=end_line;count++)
+        {
+            mids[count]=total;
+        }
+        return mids;
+    }
+    else
+    {
+        if(obstacle_keep!=0&&obstacle_keep!=5)//正在出障碍
+        {
+            obstacle_keep++;
+            return NULL;
+        }
+        if(obstacle_keep==5)//撤出障碍
+        {
+            obstacle_keep=0;
+        }
+        led(LED2,LED_OFF);
+        led(LED3,LED_OFF);
+    }
     
     /*十字，直线，弯道*/
     count_t lost_diff=left_lost-right_lost;
@@ -335,7 +365,7 @@ discern_result_t discern(void)
     
     mids=get_midline(img);//使用原始图像
     
-    static discern_result_t result={0,300};
+    static discern_result_t result={0,300};//初始偏角，初始速度
 
     if(mids==NULL)
     {
