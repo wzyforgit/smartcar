@@ -45,7 +45,7 @@ static void angle_control(angle_t err)
     }
     double P,D;
     int32 result;
-    P=(err*err)*0.7;
+    P=(err*err)*1.5;
     D=P/3;
     result=(int32)(err*P+D*(errs[0]-errs[1])+0.5);
     if(result>=0)

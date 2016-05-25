@@ -304,12 +304,12 @@ static speed_t speed_choose(traffic choose)
 static local_t get_average_mid(local_t start,local_t end,local_t *mids,pixel_t *image)
 {
     static const double weight[CAMERA_H]={
-	1,1.04,1.08,1.12,1.16,1.2,1.24,1.28,1.32,1.36,1.4,
-	1.44,1.48,1.52,1.56,1.6,1.64,1.68,1.72,1.76,1.8,
-	1.84,1.88,1.92,1.96,2,2.04,2.08,2.12,2.16,2.2,
-	2.24,2.28,2.32,2.36,2.4,2.44,2.48,2.52,2.56,2.6,
-	2.64,2.68,2.72,2.76,2.8,2.84,2.88,2.92,2.96,3,
-	3.04,3.08,3.12,3.16,3.2,3.24,3.28,3.32,3.36,
+	3.36,3.32,3.28,3.24,3.2,3.16,3.12,3.08,3.04,3,
+	2.96,2.92,2.88,2.84,2.8,2.76,2.72,2.68,2.64,2.6,
+	2.56,2.52,2.48,2.44,2.4,2.36,2.32,2.28,2.24,2.2,
+	2.16,2.12,2.08,2.04,2,1.96,1.92,1.88,1.84,1.8,
+	1.76,1.72,1.68,1.64,1.6,1.56,1.52,1.48,1.44,1.4,
+	1.36,1.32,1.28,1.24,1.2,1.16,1.12,1.08,1.04,1,
     };//y=0.04x+1
     
     register count_t count;
@@ -319,11 +319,11 @@ static local_t get_average_mid(local_t start,local_t end,local_t *mids,pixel_t *
     div=weight[end]+weight[end-1];
     for(count=end-2;count>=start;count--)
     {
-        if((image[mids[count]]==BLACK&&image[mids[count-1]]==BLACK&&image[mids[count-2]]==BLACK) ||
+        /*if((image[mids[count]]==BLACK&&image[mids[count-1]]==BLACK&&image[mids[count-2]]==BLACK) ||
            (abs(mids[count]-mids[count+1])>=7&&abs(mids[count+1]-mids[count+2])>=7))
         {
             break;
-        }
+        }*/
         mid_result+=(mids[count]*weight[count]);
         div+=weight[count];
     }
