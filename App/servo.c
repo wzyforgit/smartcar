@@ -33,27 +33,28 @@ void set_servo(servo_path path,duty_t angle)
     ftm_pwm_duty(servo_FTM, servo_CH,pwm_out);
 }
 
-#define P_base 42
-#define P_step 0.075
-static void angle_control(angle_t want_angle)
+static void angle_control(angle_t err)
 {
-    LCD_printf(0,95,"%3d",want_angle);
-    if(abs(want_angle)<2)
+    LCD_printf(0,95,"%3d",err);
+    static double errs[2]={0};
+    errs[1]=errs[0];
+    errs[0]=err;
+    if(abs(err)<2)
     {
         return;
     }
-    double P;
-    if(want_angle>=0)
+    double P,D;
+    int32 result;
+    P=(err*err)*0.7;
+    D=P/3;
+    result=(int32)(err*P+D*(errs[0]-errs[1])+0.5);
+    if(result>=0)
     {
-        P=P_base*(want_angle*P_step+1);
-        int32 result=(int32)((P*want_angle)+0.5);
         set_servo(servo_right,result);
     }
     else
     {
-        P=P_base*(want_angle*P_step-1);
-        int32 result=(int32)((P*want_angle)+0.5);//P和want_angle均为负值
-        set_servo(servo_left,result);
+        set_servo(servo_left,-result);
     }
 }
 

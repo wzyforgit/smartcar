@@ -16,8 +16,7 @@ speed_t get_speed(void)
     return motor_speed;
 }
 
-/*Ku=4.5,Tu=3*sampling_period=0.3s*/
-#define P 0.9
+#define P 0.8
 #define I 0.3
 #define D 0
 #define A (P+I+D)
@@ -40,7 +39,6 @@ static void speed_control(void)
     }
     
     int32 result=(int32)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]);
-//    LCD_printf(0,95,"%5d %5d",_motor_speed,result);
     if(result>0)
     {
         if(result>(800))

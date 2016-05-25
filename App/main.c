@@ -53,7 +53,7 @@ void main(void)
         control_result=discern();
         set_angle(control_result.angle);
 #if(motor_control==1)
-        set_speed(control_result.speed);
+        set_speed(350);
 #else
         set_speed(250);
 #endif

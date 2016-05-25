@@ -75,7 +75,7 @@ void discern_init(void)
 #define start_line 23
 #define end_line (CAMERA_H-12)
 /*由于镜头污染，所以将end_line提前11个偏移量，后面的竞速组若能购买新的摄像头并调好焦距，可以解除这个偏移量*/
-#define base_line 36
+#define base_line 35
 #define edge_offset (base_line+15)
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
@@ -209,7 +209,7 @@ static local_t* get_midline(pixel_t *image)
     }
     
     /*十字，直线，弯道*/
-    count_t lost_diff=left_lost-right_lost;
+    /*count_t lost_diff=left_lost-right_lost;
     if(lost_diff>=20)//左侧大片丢失
     {
         traffic_type=curve;
@@ -237,7 +237,7 @@ static local_t* get_midline(pixel_t *image)
     else
     {
         traffic_type=beeline;
-    }
+    }*/
     return mids;
 }
 
@@ -289,14 +289,14 @@ static speed_t speed_choose(traffic choose)
         case low_speed:
         switch(choose)
         {
-            case curve   :speed=100;break;
-            case beeline :speed=100;break;
-            case crossing:speed=100;break;
-            default      :speed=100;break;
+            case curve   :speed=350;break;
+            case beeline :speed=350;break;
+            case crossing:speed=350;break;
+            default      :speed=350;break;
         }
         break;
         
-        default:speed=100;
+        default:speed=300;
     }
     return speed;
 }
