@@ -150,7 +150,7 @@ double least_square(const local_t end,const local_t start,const local_t map_star
 #ifdef end_offset
 #undef end_offset
 #endif
-#define end_offset 5
+#define end_offset 10
 /*由于摄像头的二值化，偏移量应该在能看见起跑线的行数内*/
 
 static flag_t serch_left_black_block(pixel_t *image,local_t line,local_t median)
@@ -235,10 +235,12 @@ flag_t is_start(pixel_t *image,local_t end)
 }
 #undef end_offset
 
-flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
+/*障碍物*/
+static flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end)
 {
     count_t y;
     count_t lines=0;
+    flag_t status;
     for(y=end;y>=start;y--)
     {
         if(serch_left_black_block(image,y,CAMERA_W/2+5))
@@ -250,15 +252,16 @@ flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
     {
         led(LED2,LED_ON);
         led(LED3,LED_OFF);
-        return 1;
+        status=1;
     }
     else
     {
-        return 0;
+        status=0;
     }
+    return status;
 }
 
-flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
+static flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end)
 {
     count_t y;
     count_t lines=0;
@@ -283,18 +286,45 @@ flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
 
 count_t is_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
 {
-    if(is_left_obstacle(image,start,end,mids))
+    static count_t obstacle_type=NO_OBSTACLE;
+    if(is_left_obstacle(image,start,end))
     {
-        return LEFT_OBSTACLE;
+        obstacle_type=LEFT_OBSTACLE;
     }
-    else if(is_right_obstacle(image,start,end,mids))
+    else if(is_right_obstacle(image,start,end))
     {
-        return RIGHT_OBSTACLE;
+        obstacle_type=RIGHT_OBSTACLE;
     }
     else
     {
+        /*再度检测近处（事态紧急不管架构系列）*/
+        if(obstacle_type!=NO_OBSTACLE)
+        {
+            count_t lines,y,left,right;
+            count_t total=0;
+            for(y=CAMERA_H-1,lines=0;y>=CAMERA_H-10;y--)
+            {
+                left=serch_left_black_line(image,y,CAMERA_W/2+5);
+                right=serch_right_black_line(image,y,CAMERA_W/2-5);
+                if(right-left<40&&left!=CAMERA_W&&right!=CAMERA_W)
+                {
+                    total=total+(right+left)/2;
+                    lines++;
+                }
+            }
+            if(lines>=5)
+            {
+                total/=lines;
+                for(y=start;y<=end;y++)
+                {
+                    mids[y]=total;
+                }
+                return GO_OUT_OBSTACLE;
+            }
+        }
         led(LED2,LED_OFF);
         led(LED3,LED_OFF);
-        return NO_OBSTACLE;
+        obstacle_type=NO_OBSTACLE;
     }
+    return obstacle_type;
 }

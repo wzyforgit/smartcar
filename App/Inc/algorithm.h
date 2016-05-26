@@ -11,9 +11,10 @@
 #endif
 #define WHITE 255
 
-#define NO_OBSTACLE    0
-#define LEFT_OBSTACLE  1
-#define RIGHT_OBSTACLE 2
+#define NO_OBSTACLE     0
+#define LEFT_OBSTACLE   1
+#define RIGHT_OBSTACLE  2
+#define GO_OUT_OBSTACLE 3
 
 typedef struct
 {

@@ -11,7 +11,8 @@ typedef enum
 {
     curve,      //弯道
     beeline,    //直线
-    crossing    //十字
+    crossing,   //十字
+    obstacle    //障碍
 }traffic;
 
 extern void discern_init(void);

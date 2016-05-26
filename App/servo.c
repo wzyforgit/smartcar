@@ -39,7 +39,7 @@ static void angle_control(angle_t err)
     static double errs[2]={0};
     errs[1]=errs[0];
     errs[0]=err;
-    if(abs(err)<2)
+    if(abs(err)<2&&fabs(errs[0]-errs[1])<2)
     {
         return;
     }

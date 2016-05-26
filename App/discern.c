@@ -91,7 +91,7 @@ static local_t* get_midline(pixel_t *image)
     boundary_t left_edge,right_edge;
     left_edge=serch_left_edge(image,start_line,end_line,base_line+15);
     right_edge=serch_right_edge(image,start_line,end_line,base_line-15);
-
+    traffic_type=beeline;
     /*ÆğÅÜÏß*/
     static flag_t f_start=1;
     
@@ -170,26 +170,33 @@ static local_t* get_midline(pixel_t *image)
     /*ÕÏ°­Îï*/
     static count_t f_obstacle=NO_OBSTACLE;
     static count_t obstacle_keep=0;
-    f_obstacle=is_obstacle(image,start_line+10,CAMERA_H-1,mids);
+    f_obstacle=is_obstacle(image,start_line,end_line,mids);
     if(f_obstacle!=NO_OBSTACLE)
     {
-        count_t total=0;
         obstacle_keep=1;
-        for(count=start_line;count<=end_line;count++)
+        if(f_obstacle==GO_OUT_OBSTACLE)
         {
-            total+=mids[count];
+            ;
         }
-        if(f_obstacle==LEFT_OBSTACLE)//×óÕÏ°­
+        else
         {
-            total=total/(end_line-start_line+1)+10;
-        }
-        else//ÓÒÕÏ°­
-        {
-            total=total/(end_line-start_line+1)-8;
-        }
-        for(count=start_line;count<=end_line;count++)
-        {
-            mids[count]=total;
+            count_t total=0;
+            for(count=start_line;count<=end_line;count++)
+            {
+                total+=mids[count];
+            }
+            if(f_obstacle==LEFT_OBSTACLE)//×óÕÏ°­
+            {
+                total=total/(end_line-start_line+1)+6;
+            }
+            else//ÓÒÕÏ°­
+            {
+                total=total/(end_line-start_line+1)-8;
+            }
+            for(count=start_line;count<=end_line;count++)
+            {
+                mids[count]=total;
+            }
         }
         return mids;
     }
@@ -210,7 +217,8 @@ static local_t* get_midline(pixel_t *image)
     
     /*Ê®×Ö£¬Ö±Ïß£¬ÍäµÀ*/
     /*count_t lost_diff=left_lost-right_lost;
-    if(lost_diff>=20)//×ó²à´óÆ¬¶ªÊ§
+    LCD_printf(0,110,"%5d",lost_diff);*/
+    /*if(lost_diff>=20)//×ó²à´óÆ¬¶ªÊ§
     {
         traffic_type=curve;
         for(count=start_line;count<=end_line;count++)
@@ -282,6 +290,7 @@ static speed_t speed_choose(traffic choose)
             case curve   :speed=100;break;
             case beeline :speed=100;break;
             case crossing:speed=100;break;
+            case obstacle:speed=100;break;
             default      :speed=100;break;
         }
         break;
@@ -292,6 +301,7 @@ static speed_t speed_choose(traffic choose)
             case curve   :speed=350;break;
             case beeline :speed=350;break;
             case crossing:speed=350;break;
+            case obstacle:speed=350;break;
             default      :speed=350;break;
         }
         break;
