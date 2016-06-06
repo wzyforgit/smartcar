@@ -38,8 +38,9 @@ static void DMA0_IRQHandler(void)
 
 /*Ê¶±ð*/
 
-#define high_speed 0x01
-#define low_speed  0x02
+#define high_speed   0x01
+#define median_speed 0x02
+#define low_speed    0x03
 static int32 mode=0;
 
 static void read_DIPswitch(void)
@@ -82,7 +83,7 @@ void discern_init(void)
 #error start and end line set error
 #endif
 
-static traffic traffic_type;
+static traffic traffic_type=beeline;
 
 static local_t* get_midline(pixel_t *image)
 {
@@ -93,7 +94,7 @@ static local_t* get_midline(pixel_t *image)
     right_edge=serch_right_edge(image,start_line,end_line,base_line-15);
     traffic_type=beeline;
     /*ÆðÅÜÏß*/
-    static flag_t f_start=1;
+    /*static flag_t f_start=1;
     
     if(is_start(image,CAMERA_H-1))
     {
@@ -116,7 +117,7 @@ static local_t* get_midline(pixel_t *image)
     {
         led(LED0,LED_OFF);
         f_start=0;
-    }
+    }*/
     
     register count_t count;
     count_t left_lost,right_lost;
@@ -168,35 +169,27 @@ static local_t* get_midline(pixel_t *image)
     /*Â·¿öÅÐ¶Ï*/
     
     /*ÕÏ°­Îï*/
-    static count_t f_obstacle=NO_OBSTACLE;
+    /*static count_t f_obstacle=NO_OBSTACLE;
     static count_t obstacle_keep=0;
     f_obstacle=is_obstacle(image,start_line,end_line,mids);
     if(f_obstacle!=NO_OBSTACLE)
     {
-        obstacle_keep=1;
-        if(f_obstacle==GO_OUT_OBSTACLE)
+        count_t total=0;
+        for(count=start_line;count<=end_line;count++)
         {
-            ;
+            total+=mids[count];
         }
-        else
+        if(f_obstacle==LEFT_OBSTACLE)//×óÕÏ°­
         {
-            count_t total=0;
-            for(count=start_line;count<=end_line;count++)
-            {
-                total+=mids[count];
-            }
-            if(f_obstacle==LEFT_OBSTACLE)//×óÕÏ°­
-            {
-                total=total/(end_line-start_line+1)+6;
-            }
-            else//ÓÒÕÏ°­
-            {
-                total=total/(end_line-start_line+1)-8;
-            }
-            for(count=start_line;count<=end_line;count++)
-            {
-                mids[count]=total;
-            }
+            total=total/(end_line-start_line+1)+8;
+        }
+        else//ÓÒÕÏ°­
+        {
+            total=total/(end_line-start_line+1)-8;
+        }
+        for(count=start_line;count<=end_line;count++)
+        {
+            mids[count]=total;
         }
         return mids;
     }
@@ -213,7 +206,7 @@ static local_t* get_midline(pixel_t *image)
         }
         led(LED2,LED_OFF);
         led(LED3,LED_OFF);
-    }
+    }*/
     
     /*Ê®×Ö£¬Ö±Ïß£¬ÍäµÀ*/
     /*count_t lost_diff=left_lost-right_lost;
@@ -287,15 +280,15 @@ static speed_t speed_choose(traffic choose)
         case high_speed:
         switch(choose)
         {
-            case curve   :speed=100;break;
-            case beeline :speed=100;break;
-            case crossing:speed=100;break;
-            case obstacle:speed=100;break;
-            default      :speed=100;break;
+            case curve   :speed=400;break;
+            case beeline :speed=400;break;
+            case crossing:speed=400;break;
+            case obstacle:speed=400;break;
+            default      :speed=400;break;
         }
         break;
         
-        case low_speed:
+        case median_speed:
         switch(choose)
         {
             case curve   :speed=350;break;
@@ -306,7 +299,18 @@ static speed_t speed_choose(traffic choose)
         }
         break;
         
-        default:speed=300;
+        case low_speed:
+        switch(choose)
+        {
+            case curve   :speed=250;break;
+            case beeline :speed=250;break;
+            case crossing:speed=250;break;
+            case obstacle:speed=250;break;
+            default      :speed=250;break;
+        }
+        break;
+        
+        default:speed=250;
     }
     return speed;
 }

@@ -240,7 +240,6 @@ static flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end)
 {
     count_t y;
     count_t lines=0;
-    flag_t status;
     for(y=end;y>=start;y--)
     {
         if(serch_left_black_block(image,y,CAMERA_W/2+5))
@@ -248,17 +247,16 @@ static flag_t is_left_obstacle(pixel_t *image,local_t start,local_t end)
             lines++;
         }
     }
-    if(lines>=5)
+    if(lines>=3)
     {
         led(LED2,LED_ON);
         led(LED3,LED_OFF);
-        status=1;
+        return 1;
     }
     else
     {
-        status=0;
+        return 0;
     }
-    return status;
 }
 
 static flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end)
@@ -272,7 +270,7 @@ static flag_t is_right_obstacle(pixel_t *image,local_t start,local_t end)
             lines++;
         }
     }
-    if(lines>=5)
+    if(lines>=3)
     {
         led(LED2,LED_OFF);
         led(LED3,LED_ON);
@@ -297,31 +295,6 @@ count_t is_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
     }
     else
     {
-        /*再度检测近处（事态紧急不管架构系列）*/
-        if(obstacle_type!=NO_OBSTACLE)
-        {
-            count_t lines,y,left,right;
-            count_t total=0;
-            for(y=CAMERA_H-1,lines=0;y>=CAMERA_H-10;y--)
-            {
-                left=serch_left_black_line(image,y,CAMERA_W/2+5);
-                right=serch_right_black_line(image,y,CAMERA_W/2-5);
-                if(right-left<40&&left!=CAMERA_W&&right!=CAMERA_W)
-                {
-                    total=total+(right+left)/2;
-                    lines++;
-                }
-            }
-            if(lines>=5)
-            {
-                total/=lines;
-                for(y=start;y<=end;y++)
-                {
-                    mids[y]=total;
-                }
-                return GO_OUT_OBSTACLE;
-            }
-        }
         led(LED2,LED_OFF);
         led(LED3,LED_OFF);
         obstacle_type=NO_OBSTACLE;

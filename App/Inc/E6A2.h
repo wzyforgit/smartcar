@@ -1,7 +1,7 @@
 #ifndef _E6A2_H_
 #define _E6A2_H_
 
-#define motor_control 1
+#define motor_control 0
 
 #if(motor_control==1)
 extern void  E6A2_init(void);

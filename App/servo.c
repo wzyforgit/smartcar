@@ -35,7 +35,6 @@ void set_servo(servo_path path,duty_t angle)
 
 static void angle_control(angle_t err)
 {
-    LCD_printf(0,95,"%3d",err);
     static double errs[2]={0};
     errs[1]=errs[0];
     errs[0]=err;
@@ -45,7 +44,7 @@ static void angle_control(angle_t err)
     }
     double P,D;
     int32 result;
-    P=(err*err)*1.5;
+    P=(err*err)*1.1+20;
     D=P/3;
     result=(int32)(err*P+D*(errs[0]-errs[1])+0.5);
     if(result>=0)

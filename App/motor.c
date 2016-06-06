@@ -9,7 +9,7 @@
 #define MOTOR1_PWM_IO  FTM0_CH3
 #define MOTOR2_PWM_IO  FTM0_CH4
 
-#define MOTOR_HZ    50//(20*FTM0_PRECISON0)
+#define MOTOR_HZ    10000//(20*FTM0_PRECISON0)
 
 void motor_init(void)
 {
