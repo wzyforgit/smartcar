@@ -13,7 +13,7 @@ typedef enum
     beeline,    //Ö±Ïß
     crossing,   //Ê®×Ö
     obstacle    //ÕÏ°­
-}traffic;
+}traffic_t;
 
 extern void discern_init(void);
 extern discern_result_t discern(void);

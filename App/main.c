@@ -54,6 +54,7 @@ void main(void)
         set_angle(control_result.angle);
 #if(motor_control==1)
         set_speed(control_result.speed);
+        LCD_printf(0,90,"%5d",control_result.speed);
 #else
         set_speed(200);
 #endif
