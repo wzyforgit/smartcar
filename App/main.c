@@ -37,6 +37,7 @@ void init(void)
     LCD_init();       //LCDÆÁ
     discern_init();   //Ê¶±ðÄ£¿é
     LED_init();
+    uart_init(UART4,9600);
     
     EnableInterrupts;
     
@@ -48,15 +49,24 @@ void main(void)
 {
     init();
     discern_result_t control_result;
+    uint8 distance[2];
+    uint16 distance_result;
     while(1)
     {
         control_result=discern();
         set_angle(control_result.angle);
+        
+        uart_putchar(UART4,0x55);
+        uart_getchar(UART4,(char*)&distance[0]);
+        uart_getchar(UART4,(char*)&distance[1]);
+        distance_result=(distance[0]<<8)|distance[1];
+        LCD_printf(0,110,"%5u",distance_result);
+        
 #if(motor_control==1)
         set_speed(control_result.speed);
         LCD_printf(0,90,"%5d",control_result.speed);
 #else
-        set_speed(200);
+        set_speed(500);
 #endif
     }
 }

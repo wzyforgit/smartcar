@@ -16,7 +16,7 @@ speed_t get_speed(void)
     return motor_speed;
 }
 
-#define P 0.8
+#define P 1.0
 #define I 0.3
 #define D 0
 #define A (P+I+D)

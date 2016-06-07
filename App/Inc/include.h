@@ -23,7 +23,7 @@ typedef _Bool  flag_t;
  
 //#include  "MK60_wdog.h"
 #include  "MK60_gpio.h"     //IO口操作
-//#include  "MK60_uart.h"     //串口
+#include  "MK60_uart.h"     //串口
 //#include  "MK60_SysTick.h"
 //#include  "MK60_lptmr.h"    //低功耗定时器(延时)
 //#include  "MK60_i2c.h"      //I2C

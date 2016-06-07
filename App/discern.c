@@ -81,8 +81,6 @@ static speed_t speed_choose(traffic_t choose)
         {
             case curve   :speed=400;break;
             case beeline :speed=400;break;
-            case crossing:speed=400;break;
-            case obstacle:speed=400;break;
             default      :speed=400;break;
         }
         break;
@@ -92,8 +90,6 @@ static speed_t speed_choose(traffic_t choose)
         {
             case curve   :speed=350;break;
             case beeline :speed=350;break;
-            case crossing:speed=350;break;
-            case obstacle:speed=350;break;
             default      :speed=350;break;
         }
         break;
@@ -103,8 +99,6 @@ static speed_t speed_choose(traffic_t choose)
         {
             case curve   :speed=250;break;
             case beeline :speed=250;break;
-            case crossing:speed=250;break;
-            case obstacle:speed=250;break;
             default      :speed=250;break;
         }
         break;
