@@ -61,7 +61,7 @@
 
 #elif defined(MK60F15)			//以下为 MK60F15 的超频配置
 
-#define CORE_CLK                PLL200      // 从 PLL_e 里选择 已提供的 配置方案
+#define CORE_CLK                PLL150      // 从 PLL_e 里选择 已提供的 配置方案
                                             // bus 、 flex bus 、 flash 频率 都是 core 整数倍分频而来
 #define MAX_BUS_CLK             100         // bus      (bus        >= core/16  )
 #define MAX_FLEXBUS_CLK         50          // flex bus (flex bus   >= core/16  )

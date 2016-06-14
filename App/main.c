@@ -55,7 +55,7 @@ void main(void)
 #if(motor_control==1)
         set_speed(control_result.speed);
 #else
-        set_speed(200);
+        set_speed(2000);
 #endif
     }
 }

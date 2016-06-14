@@ -280,37 +280,37 @@ static speed_t speed_choose(traffic choose)
         case high_speed:
         switch(choose)
         {
-            case curve   :speed=400;break;
-            case beeline :speed=400;break;
-            case crossing:speed=400;break;
-            case obstacle:speed=400;break;
-            default      :speed=400;break;
+            case curve   :speed=4000;break;
+            case beeline :speed=4000;break;
+            case crossing:speed=4000;break;
+            case obstacle:speed=4000;break;
+            default      :speed=4000;break;
         }
         break;
         
         case median_speed:
         switch(choose)
         {
-            case curve   :speed=350;break;
-            case beeline :speed=350;break;
-            case crossing:speed=350;break;
-            case obstacle:speed=350;break;
-            default      :speed=350;break;
+            case curve   :speed=3500;break;
+            case beeline :speed=3500;break;
+            case crossing:speed=3500;break;
+            case obstacle:speed=3500;break;
+            default      :speed=3500;break;
         }
         break;
         
         case low_speed:
         switch(choose)
         {
-            case curve   :speed=250;break;
-            case beeline :speed=250;break;
-            case crossing:speed=250;break;
-            case obstacle:speed=250;break;
-            default      :speed=250;break;
+            case curve   :speed=2500;break;
+            case beeline :speed=2500;break;
+            case crossing:speed=2500;break;
+            case obstacle:speed=2500;break;
+            default      :speed=2500;break;
         }
         break;
         
-        default:speed=250;
+        default:speed=2500;
     }
     return speed;
 }

@@ -17,15 +17,15 @@ void set_servo(servo_path path,duty_t angle)
     
     if(path==servo_right)
     {
-        if(angle>1100)
-            pwm_out=FTM1_PRECISON-(median-1100);
+        if(angle>1250)
+            pwm_out=FTM1_PRECISON-(median-1250);
         else
             pwm_out=FTM1_PRECISON-(median-angle);
     }
     else if(path==servo_left)
     {
-        if(angle>1150)
-            pwm_out=FTM1_PRECISON-(median+1150);
+        if(angle>1250)
+            pwm_out=FTM1_PRECISON-(median+1250);
         else
             pwm_out=FTM1_PRECISON-(median+angle);
     }
