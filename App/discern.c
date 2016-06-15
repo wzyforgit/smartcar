@@ -3,7 +3,6 @@
 #include <string.h>
 
 /*摄像头硬件*/
-/*warning:由于山外库的BUG，在使用摄像头的时候请勿开启任何编译器优化*/
 
 static pixel_t imgbuff[CAMERA_SIZE];
 static pixel_t img[CAMERA_H*CAMERA_W];
@@ -76,7 +75,7 @@ void discern_init(void)
 #define start_line 23
 #define end_line (CAMERA_H-12)
 /*由于镜头污染，所以将end_line提前11个偏移量，后面的竞速组若能购买新的摄像头并调好焦距，可以解除这个偏移量*/
-#define base_line 35
+#define base_line (CAMERA_W/2-5)
 #define edge_offset (base_line+15)
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
@@ -372,12 +371,15 @@ discern_result_t discern(void)
     camera_get_img();//获取图像
     
     img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
+
+    pixel_t *new_img=NULL;
+    new_img=image_adjust(img);
     
-    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, img);//显示原始图像
+    LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, new_img);
     
     local_t *mids;//中线
     
-    mids=get_midline(img);//使用原始图像
+    mids=get_midline(new_img);
     
     static discern_result_t result={0,300};//初始偏角，初始速度
 
@@ -386,7 +388,7 @@ discern_result_t discern(void)
         return result;
     }
 
-    result=compute_result(mids,img);//计算偏角，速度选择
+    result=compute_result(mids,new_img);//计算偏角，速度选择
     
     return result;//返回识别结果
 }

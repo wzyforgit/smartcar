@@ -539,7 +539,7 @@
       <name>$PROJ_DIR$\..\..\App\motor.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\App\Inc\PORT_cfg.h</name>
+      <name>$PROJ_DIR$\..\..\App\PORT_cfg.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\App\servo.c</name>

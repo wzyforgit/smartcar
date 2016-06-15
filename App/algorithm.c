@@ -301,3 +301,48 @@ count_t is_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids)
     }
     return obstacle_type;
 }
+
+#define use_methord 0
+#if !use_methord
+/*Õ∞–Œ ß’Ê*/
+pixel_t* image_adjust(pixel_t* image)
+{
+    #include"adjustMap"
+    static pixel_t dst_image[CAMERA_H*CAMERA_W];
+    int x,y;
+    for (y = 0;y < CAMERA_H;y++)
+	{
+		for (x = 0;x < CAMERA_W;x++)
+		{
+            dst_image[x+y*CAMERA_W]=image[(adjust_goal[x+y*CAMERA_W].x)+(adjust_goal[x+y*CAMERA_W].y)*CAMERA_W];
+		}
+	}
+    return dst_image;
+}
+#else
+#define kx -0.00008
+#define ky -0.00008
+pixel_t* image_adjust(pixel_t* image)
+{
+    static pixel_t dst_image[CAMERA_H*CAMERA_W];
+    
+    int x, y;
+	int mx, my;
+	int nx, ny;
+	for (y = 0;y < CAMERA_H;y++)
+	{
+		my = y - CAMERA_H / 2;
+		for (x = 0;x < CAMERA_W;x++)
+		{
+			mx = x - CAMERA_W / 2;
+			nx = mx*(1 + kx*mx*mx + ky*my*my) + 0.5 ;
+			nx = nx + CAMERA_W / 2;
+			ny = my*(1 + kx*mx*mx + ky*my*my) + 0.5 ;
+			ny = ny + CAMERA_H / 2;
+			dst_image[x + y*CAMERA_W] = image[nx + ny*CAMERA_W];
+		}
+	}
+
+    return dst_image;
+}
+#endif

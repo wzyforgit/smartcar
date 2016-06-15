@@ -29,5 +29,6 @@ extern double least_square(const local_t start,const local_t end,const local_t m
 extern void get_frame(pixel_t *dst,pixel_t *src);
 extern flag_t is_start(pixel_t *image,local_t end);
 extern count_t is_obstacle(pixel_t *image,local_t start,local_t end,local_t *mids);
+extern pixel_t* image_adjust(pixel_t* image);
 
 #endif

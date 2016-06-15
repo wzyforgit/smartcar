@@ -57,6 +57,6 @@ typedef _Bool  flag_t;
 
 //#include  "Vcan_touch.h"        //触摸驱动
 
-//#include  "VCAN_computer.h"     //多功能调试助手
+#include  "VCAN_computer.h"     //多功能调试助手
 
 #endif  //__INCLUDE_H__

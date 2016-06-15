@@ -1188,7 +1188,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>11111111</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -1289,7 +1289,7 @@
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>0</state>
+          <state>2</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -1364,7 +1364,7 @@
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>0</state>
+          <state>2</state>
         </option>
         <option>
           <name>CCGuardCalls</name>
@@ -5745,7 +5745,7 @@
       <name>$PROJ_DIR$\..\..\App\motor.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\App\Inc\PORT_cfg.h</name>
+      <name>$PROJ_DIR$\..\..\App\PORT_cfg.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\App\servo.c</name>
