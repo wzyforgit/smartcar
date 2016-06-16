@@ -16,12 +16,18 @@
 
 #include "include.h"
 
-void LED_init(void)
+void debuger_init(void)
 {
     led_init(LED0);
     led_init(LED1);
     led_init(LED2);
     led_init(LED3);
+
+    key_init(KEY_U);
+    key_init(KEY_D);
+    key_init(KEY_L);
+    key_init(KEY_R);
+    key_init(KEY_B);
 }
 
 void init(void)
@@ -36,8 +42,8 @@ void init(void)
 #endif
     LCD_init();       //LCDÆÁ
     discern_init();   //Ê¶±ðÄ£¿é
-    LED_init();
-    
+    debuger_init();
+
     EnableInterrupts;
     
     set_speed(0);
@@ -47,6 +53,8 @@ void init(void)
 void main(void)
 {
     init();
+    uint32 data = flash_read(FLASH_SECTOR_NUM-1, 0, uint32);
+    LCD_printf(0,81,"%d %d %d",data,data>>16,data&0xffff);
     discern_result_t control_result;
     while(1)
     {

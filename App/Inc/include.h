@@ -34,13 +34,13 @@ typedef _Bool  flag_t;
 //#include  "MK60_adc.h"      //ADC
 //#include  "MK60_dac.h"      //DAC
 #include  "MK60_dma.h"      //DMA
-//#include  "MK60_FLASH.h"    //FLASH
+#include  "MK60_FLASH.h"    //FLASH
 //#include  "MK60_can.h"      //CAN
 //#include  "MK60_sdhc.h"     //SDHC
 //#include  "MK60_usb.h"      //usb
 
 #include  "VCAN_LED.H"          //LED
-//#include  "VCAN_KEY.H"          //KEY
+#include  "VCAN_KEY.H"          //KEY
 //#include  "VCAN_MMA7455.h"      //三轴加速度MMA7455
 //#include  "VCAN_NRF24L0.h"      //无线模块NRF24L01+
 //#include  "VCAN_RTC_count.h"    //RTC 时间转换
