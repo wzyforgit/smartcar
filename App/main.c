@@ -53,8 +53,9 @@ void init(void)
 void main(void)
 {
     init();
-    uint32 data = flash_read(FLASH_SECTOR_NUM-1, 0, uint32);
-    LCD_printf(0,81,"%d %d %d",data,data>>16,data&0xffff);
+#if(!motor_control)
+    set_speed(4000);
+#endif
     discern_result_t control_result;
     while(1)
     {
@@ -62,8 +63,6 @@ void main(void)
         set_angle(control_result.angle);
 #if(motor_control==1)
         set_speed(control_result.speed);
-#else
-        set_speed(2000);
 #endif
     }
 }

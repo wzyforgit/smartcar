@@ -321,7 +321,7 @@ pixel_t* image_adjust(pixel_t* image)
 }
 #else
 #define kx -0.00008
-#define ky -0.00008
+#define ky -0.00010
 pixel_t* image_adjust(pixel_t* image)
 {
     static pixel_t dst_image[CAMERA_H*CAMERA_W];

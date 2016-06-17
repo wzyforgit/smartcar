@@ -376,7 +376,6 @@ discern_result_t discern(void)
     new_img=image_adjust(img);
     
     LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, new_img);
-    
     local_t *mids;//ÖÐÏß
     
     mids=get_midline(new_img);

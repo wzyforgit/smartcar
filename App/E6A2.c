@@ -8,13 +8,7 @@
 /*为了不影响图像采集和显示，推荐不要小于20*/
 #define sampling_period 100
 
-static volatile speed_t motor_speed=0;
 static volatile speed_t goal_speed=0;
-
-speed_t get_speed(void)
-{
-    return motor_speed;
-}
 
 #define P 0.8
 #define I 0.3
@@ -22,16 +16,15 @@ speed_t get_speed(void)
 #define A (P+I+D)
 #define B (P+2*D)
 #define C (D)
-static void speed_control(void)
+static void speed_control(speed_t motor_speed)
 {
     static speed_t speed_diff[3]={0,0,0};
     
-    int32 _goal_speed=goal_speed;
-    int32 _motor_speed=motor_speed;
+    speed_t _goal_speed=goal_speed;
     
     speed_diff[2]=speed_diff[1];
     speed_diff[1]=speed_diff[0];
-    speed_diff[0]=_goal_speed-_motor_speed;
+    speed_diff[0]=_goal_speed-motor_speed;
     
     if(abs(speed_diff[0])<5)
     {
@@ -56,18 +49,20 @@ static void speed_control(void)
 static void PIT0_IRQHandler(void)
 {
 #if(sampling_period==20)
-    motor_speed=ftm_quad_get(quad_module);
+    speed_t motor_speed=ftm_quad_get(quad_module);
 #else
     //转换为20ms内的编码值
-    motor_speed=(speed_t)((double)ftm_quad_get(quad_module)/sampling_period*20);
+    speed_t motor_speed=(speed_t)((double)ftm_quad_get(quad_module)/sampling_period*20);
 #endif
-    speed_control();
+    speed_control(motor_speed);
+    vcan_sendware(&motor_speed,sizeof(motor_speed));//发送速度到虚拟示波器
     ftm_quad_clean(quad_module);
     PIT_Flag_Clear(PIT0);
 }
 
 void E6A2_init(void)
 {
+    uart_init(UART4,115200);
     ftm_quad_init(quad_module);                                 //FTM2 正交解码初始化（所用的管脚可查 port_cfg.h ）
     pit_init_ms(PIT0, sampling_period);                         //初始化PIT0，定时时间为： sampling_period ms
     set_vector_handler(PIT0_VECTORn ,PIT0_IRQHandler);          //设置PIT0的中断服务函数为 PIT0_IRQHandler

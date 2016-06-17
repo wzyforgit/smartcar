@@ -1,16 +1,21 @@
 #include "include.h"
 #include <math.h>
 
-#define angle_debug 1
 #define servo_FTM   FTM1
 #define servo_CH    FTM_CH0
 #define servo_HZ    (300)
 #define median      (5500)
 
+static double a=0;
+static int b=0;
+
 void servo_init(void)
 {
     ftm_pwm_init(servo_FTM, servo_CH,servo_HZ,FTM1_PRECISON);
     flash_init();
+    uint32 data = flash_read(FLASH_SECTOR_NUM-1, 0, uint32);
+    a=(double)(data>>16)/100;
+    b=data&0xffff;
 }
 
 void set_servo(servo_path path,duty_t angle)
@@ -35,9 +40,6 @@ void set_servo(servo_path path,duty_t angle)
     ftm_pwm_duty(servo_FTM, servo_CH,pwm_out);
 }
 
-#if angle_debug
-static double a=1.1;
-static int b=20;
 void angle_debuger(void)
 {
     if(key_get(KEY_U)==KEY_DOWN)
@@ -99,7 +101,6 @@ void angle_debuger(void)
     }
     LCD_printf(0,95,"%3d %3d",(int)(a*100),b);
 }
-#endif
 
 static void angle_control(angle_t err)
 {
@@ -112,12 +113,8 @@ static void angle_control(angle_t err)
     }
     double P,D;
     int32 result;
-#if angle_debug
-    angle_debuger();
+    angle_debuger();//ÎåÖá°´¼üµ÷ÊÔ
     P=(err*err)*a+b;
-#else
-    P=(err*err)*1.1+20;
-#endif
     D=P/3;
     result=(int32)(err*P+D*(errs[0]-errs[1])+0.5);
     if(result>=0)
