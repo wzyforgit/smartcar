@@ -44,19 +44,12 @@ static int32 mode=0;
 
 static void read_DIPswitch(void)
 {
-    port_init(PTC16, ALT1 | PULLUP );
-    GPIO_PDDR_REG(GPIOX_BASE(PTC16)) &= ~(1 << PTn(PTC16));
+    gpio_init(PTC16,GPI,0);
+    gpio_init(PTC17,GPI,0);
+    gpio_init(PTC18,GPI,0);
+    gpio_init(PTC19,GPI,0);
     
-    port_init(PTC17, ALT1 | PULLUP );
-    GPIO_PDDR_REG(GPIOX_BASE(PTC17)) &= ~(1 << PTn(PTC17));
-    
-    port_init(PTC18, ALT1 | PULLUP );
-    GPIO_PDDR_REG(GPIOX_BASE(PTC18)) &= ~(1 << PTn(PTC18));
-    
-    port_init(PTC19, ALT1 | PULLUP );
-    GPIO_PDDR_REG(GPIOX_BASE(PTC19)) &= ~(1 << PTn(PTC19));
-    
-    mode=GPIO_GET_NBIT(3,PTC16);
+    mode=GPIO_GET_NBIT(4,PTC16);
     LCD_printf(0,61,"%d",mode);
 }
 
@@ -73,9 +66,9 @@ void discern_init(void)
 }
 
 #define start_line 23
-#define end_line (CAMERA_H-12)
+#define end_line (CAMERA_H-1)
 /*由于镜头污染，所以将end_line提前11个偏移量，后面的竞速组若能购买新的摄像头并调好焦距，可以解除这个偏移量*/
-#define base_line (CAMERA_W/2-5)
+#define base_line (CAMERA_W/2)
 #define edge_offset (base_line+15)
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
@@ -279,37 +272,37 @@ static speed_t speed_choose(traffic choose)
         case high_speed:
         switch(choose)
         {
-            case curve   :speed=4000;break;
-            case beeline :speed=4000;break;
-            case crossing:speed=4000;break;
-            case obstacle:speed=4000;break;
-            default      :speed=4000;break;
+            case curve   :speed=1000;break;
+            case beeline :speed=1000;break;
+            case crossing:speed=1000;break;
+            case obstacle:speed=1000;break;
+            default      :speed=1000;break;
         }
         break;
         
         case median_speed:
         switch(choose)
         {
-            case curve   :speed=3500;break;
-            case beeline :speed=3500;break;
-            case crossing:speed=3500;break;
-            case obstacle:speed=3500;break;
-            default      :speed=3500;break;
+            case curve   :speed=1000;break;
+            case beeline :speed=1000;break;
+            case crossing:speed=1000;break;
+            case obstacle:speed=1000;break;
+            default      :speed=1000;break;
         }
         break;
         
         case low_speed:
         switch(choose)
         {
-            case curve   :speed=2500;break;
-            case beeline :speed=2500;break;
-            case crossing:speed=2500;break;
-            case obstacle:speed=2500;break;
-            default      :speed=2500;break;
+            case curve   :speed=1000;break;
+            case beeline :speed=1000;break;
+            case crossing:speed=1000;break;
+            case obstacle:speed=1000;break;
+            default      :speed=1000;break;
         }
         break;
         
-        default:speed=2500;
+        default:speed=1000;
     }
     return speed;
 }

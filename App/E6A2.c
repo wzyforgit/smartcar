@@ -55,7 +55,8 @@ static void PIT0_IRQHandler(void)
     speed_t motor_speed=(speed_t)((double)ftm_quad_get(quad_module)/sampling_period*20);
 #endif
     speed_control(motor_speed);
-    vcan_sendware(&motor_speed,sizeof(motor_speed));//发送速度到虚拟示波器
+//    vcan_sendware(&motor_speed,sizeof(motor_speed));//发送速度到虚拟示波器
+    LCD_printf(0,110,"%5d",motor_speed);
     ftm_quad_clean(quad_module);
     PIT_Flag_Clear(PIT0);
 }

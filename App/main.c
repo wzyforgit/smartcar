@@ -54,9 +54,9 @@ void main(void)
 {
     init();
 #if(!motor_control)
-    set_speed(4000);
+    set_speed(3000);
 #endif
-    discern_result_t control_result;
+    discern_result_t control_result={0,0};
     while(1)
     {
         control_result=discern();
