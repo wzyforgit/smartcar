@@ -53,16 +53,11 @@ void init(void)
 void main(void)
 {
     init();
-#if(!motor_control)
-    set_speed(3000);
-#endif
     discern_result_t control_result={0,0};
     while(1)
     {
         control_result=discern();
         set_angle(control_result.angle);
-#if(motor_control==1)
         set_speed(control_result.speed);
-#endif
     }
 }

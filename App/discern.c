@@ -67,15 +67,21 @@ void discern_init(void)
 
 #define start_line 23
 #define end_line (CAMERA_H-1)
-/*由于镜头污染，所以将end_line提前11个偏移量，后面的竞速组若能购买新的摄像头并调好焦距，可以解除这个偏移量*/
-#define base_line (CAMERA_W/2)
-#define edge_offset (base_line+15)
+#define base_line (CAMERA_W/2-5)
+#define edge_offset (base_line+base_edge_offset[count])
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
 #error start and end line set error
 #endif
 
-static traffic traffic_type=beeline;
+static const int base_edge_offset[CAMERA_H]={
+	14,14,14,15,15,15,16,16,16,17,
+	17,17,17,18,18,18,19,19,19,20,
+	20,20,20,21,21,21,22,22,22,23,
+	23,23,23,24,24,24,25,25,25,26,
+	26,26,26,27,27,27,28,28,28,29,
+	29,29,29,30,30,30,31,31,31,32
+};
 
 static local_t* get_midline(pixel_t *image)
 {
@@ -84,19 +90,17 @@ static local_t* get_midline(pixel_t *image)
     boundary_t left_edge,right_edge;
     left_edge=serch_left_edge(image,start_line,end_line,base_line+15);
     right_edge=serch_right_edge(image,start_line,end_line,base_line-15);
-    traffic_type=beeline;
+
     /*起跑线*/
-    /*static flag_t f_start=1;
-    
-    if(is_start(image,CAMERA_H-1))
+    static count_t start_line_discern_delay=0;
+
+    if(start_line_discern_delay<400)
     {
-        if(f_start==1)
-        {
-            led(LED0,LED_ON);
-            traffic_type=beeline;
-            return NULL;
-        }
-        else
+        start_line_discern_delay++;
+    }
+    else
+    {
+        if(is_start(image,CAMERA_H-1))
         {
             set_motor(motor_back,0);
             DisableInterrupts;
@@ -104,12 +108,6 @@ static local_t* get_midline(pixel_t *image)
             while(1);
         }
     }
-    
-    if(f_start==1)
-    {
-        led(LED0,LED_OFF);
-        f_start=0;
-    }*/
     
     register count_t count;
     count_t left_lost,right_lost;
@@ -161,7 +159,7 @@ static local_t* get_midline(pixel_t *image)
     /*路况判断*/
     
     /*障碍物*/
-    /*static count_t f_obstacle=NO_OBSTACLE;
+    static count_t f_obstacle=NO_OBSTACLE;
     static count_t obstacle_keep=0;
     f_obstacle=is_obstacle(image,start_line,end_line,mids);
     if(f_obstacle!=NO_OBSTACLE)
@@ -173,11 +171,11 @@ static local_t* get_midline(pixel_t *image)
         }
         if(f_obstacle==LEFT_OBSTACLE)//左障碍
         {
-            total=total/(end_line-start_line+1)+8;
+            total=total/(end_line-start_line+1)+5;
         }
         else//右障碍
         {
-            total=total/(end_line-start_line+1)-8;
+            total=total/(end_line-start_line+1)-5;
         }
         for(count=start_line;count<=end_line;count++)
         {
@@ -198,7 +196,7 @@ static local_t* get_midline(pixel_t *image)
         }
         led(LED2,LED_OFF);
         led(LED3,LED_OFF);
-    }*/
+    }
     
     /*十字，直线，弯道*/
     /*count_t lost_diff=left_lost-right_lost;
@@ -254,55 +252,35 @@ static void display_start_end(void)
 
 static void display_lines(local_t start,local_t end,local_t *lines)
 {
-    Site_t line_site[end-start+1];
-    register count_t count,line_count;
-    for(count=start,line_count=0;count<=end;count++,line_count++)
+    static Site_t line_site[CAMERA_H];
+    register count_t count;
+    for(count=start;count<=end;count++)
     {
-        line_site[line_count].x=lines[count];
-        line_site[line_count].y=count;
+        line_site[count].x=lines[count];
+        line_site[count].y=count;
     }
-    LCD_points(line_site,end-start+1,RED);
+    LCD_points(&line_site[start],end-start+1,RED);
 }
 
-static speed_t speed_choose(traffic choose)
+static speed_t speed_choose(angle_t average_mid)
 {
     speed_t speed=0;
     switch(mode)
     {
         case high_speed:
-        switch(choose)
-        {
-            case curve   :speed=1000;break;
-            case beeline :speed=1000;break;
-            case crossing:speed=1000;break;
-            case obstacle:speed=1000;break;
-            default      :speed=1000;break;
-        }
+        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
         break;
         
         case median_speed:
-        switch(choose)
-        {
-            case curve   :speed=1000;break;
-            case beeline :speed=1000;break;
-            case crossing:speed=1000;break;
-            case obstacle:speed=1000;break;
-            default      :speed=1000;break;
-        }
+        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
         break;
         
         case low_speed:
-        switch(choose)
-        {
-            case curve   :speed=1000;break;
-            case beeline :speed=1000;break;
-            case crossing:speed=1000;break;
-            case obstacle:speed=1000;break;
-            default      :speed=1000;break;
-        }
+        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
         break;
         
-        default:speed=1000;
+        default:
+        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
     }
     return speed;
 }
@@ -352,25 +330,23 @@ static local_t get_average_mid(local_t start,local_t end,local_t *mids,pixel_t *
 static discern_result_t compute_result(local_t *mids,pixel_t *image)
 {
     discern_result_t result={0,0};
-    
-    result.speed=speed_choose(traffic_type);
     five_point_smooth(start_line,end_line,mids);
     result.angle=get_average_mid(start_line,end_line,mids,image)-base_line;
+    result.speed=speed_choose(result.angle);
     return result;
 }
 
 discern_result_t discern(void)
 {
     camera_get_img();//获取图像
-    
     img_extract(img, imgbuff, CAMERA_SIZE);//解压为灰度图像
 
     pixel_t *new_img=NULL;
     new_img=image_adjust(img);
-    
+//    vcan_sendimg(new_img,CAMERA_H*CAMERA_W);
     LCD_Img_gray((Site_t){0, 0}, (Size_t){CAMERA_W, CAMERA_H}, new_img);
+
     local_t *mids;//中线
-    
     mids=get_midline(new_img);
     
     static discern_result_t result={0,300};//初始偏角，初始速度
