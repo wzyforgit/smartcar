@@ -6,13 +6,13 @@
 #define quad_module     FTM2
 
 /*为了不影响图像采集和显示，推荐不要小于20*/
-#define sampling_period 100
+#define sampling_period 20
 
 static volatile speed_t goal_speed=0;
-
-#define P 0.8
-#define I 0.3
-#define D 0
+//1.12.625 17.5 1.755
+#define P 12.625
+#define I 17.5
+#define D 1.755
 #define A (P+I+D)
 #define B (P+2*D)
 #define C (D)
@@ -34,14 +34,14 @@ static void speed_control(speed_t motor_speed)
     int32 result=(int32)(A*speed_diff[0]+B*speed_diff[1]+C*speed_diff[2]);
     if(result>0)
     {
-        if(result>(800))
-            result=800;
+        if(result>(9000))
+            result=9000;
         set_motor(motor_forward,(speed_t)(result));
     }
     else
     {
-        if(result<(-800))
-            result=-800;
+        if(result<(-9000))
+            result=-9000;
         set_motor(motor_back,(speed_t)(-result));
     }
 }
@@ -55,7 +55,6 @@ static void PIT0_IRQHandler(void)
     speed_t motor_speed=(speed_t)((double)ftm_quad_get(quad_module)/sampling_period*20);
 #endif
     speed_control(motor_speed);
-//    vcan_sendware(&motor_speed,sizeof(motor_speed));//发送速度到虚拟示波器
     LCD_printf(0,110,"%5d",motor_speed);
     ftm_quad_clean(quad_module);
     PIT_Flag_Clear(PIT0);

@@ -41,7 +41,7 @@ static void DMA0_IRQHandler(void)
 #define median_speed 0x02
 #define low_speed    0x03
 static int32 mode=0;
-
+flag_t f_start=0;
 static void read_DIPswitch(void)
 {
     gpio_init(PTC16,GPI,0);
@@ -49,7 +49,7 @@ static void read_DIPswitch(void)
     gpio_init(PTC18,GPI,0);
     gpio_init(PTC19,GPI,0);
     
-    mode=GPIO_GET_NBIT(4,PTC16);
+    mode=GPIO_GET_NBIT(3,PTC16);
     LCD_printf(0,61,"%d",mode);
 }
 
@@ -67,7 +67,7 @@ void discern_init(void)
 
 #define start_line 23
 #define end_line (CAMERA_H-1)
-#define base_line (CAMERA_W/2-5)
+#define base_line (CAMERA_W/2-4)
 #define edge_offset (base_line+base_edge_offset[count])
 
 #if(start_line<0||end_line>=CAMERA_H||end_line<=start_line||base_line<0||base_line>=CAMERA_W)
@@ -102,10 +102,8 @@ static local_t* get_midline(pixel_t *image)
     {
         if(is_start(image,CAMERA_H-1))
         {
-            set_motor(motor_back,0);
-            DisableInterrupts;
+            f_start=1;
             led(LED1,LED_ON);
-            while(1);
         }
     }
     
@@ -159,7 +157,7 @@ static local_t* get_midline(pixel_t *image)
     /*路况判断*/
     
     /*障碍物*/
-    static count_t f_obstacle=NO_OBSTACLE;
+    /*static count_t f_obstacle=NO_OBSTACLE;
     static count_t obstacle_keep=0;
     f_obstacle=is_obstacle(image,start_line,end_line,mids);
     if(f_obstacle!=NO_OBSTACLE)
@@ -196,7 +194,7 @@ static local_t* get_midline(pixel_t *image)
         }
         led(LED2,LED_OFF);
         led(LED3,LED_OFF);
-    }
+    }*/
     
     /*十字，直线，弯道*/
     /*count_t lost_diff=left_lost-right_lost;
@@ -265,22 +263,13 @@ static void display_lines(local_t start,local_t end,local_t *lines)
 static speed_t speed_choose(angle_t average_mid)
 {
     speed_t speed=0;
-    switch(mode)
+    if(average_mid>5)
     {
-        case high_speed:
-        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
-        break;
-        
-        case median_speed:
-        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
-        break;
-        
-        case low_speed:
-        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
-        break;
-        
-        default:
-        speed=(int)(-1.5*average_mid*average_mid+0.5)+2500;
+        speed=200;
+    }
+    else
+    {
+        speed=260;
     }
     return speed;
 }
@@ -301,10 +290,11 @@ static local_t get_average_mid(local_t start,local_t end,local_t *mids,pixel_t *
     double div;
     mid_result=(mids[end]*weight[end]+mids[end-1]*weight[end-1]);
     div=weight[end]+weight[end-1];
-    for(count=end-2;count>=start;count--)
+    for(count=end;count>=start;count--)
     {
         /*if((image[mids[count]]==BLACK&&image[mids[count-1]]==BLACK&&image[mids[count-2]]==BLACK) ||
-           (abs(mids[count]-mids[count+1])>=7&&abs(mids[count+1]-mids[count+2])>=7))
+            (abs(mids[count]-mids[count+1])>=7&&abs(mids[count+1]-mids[count+2])>=7)
+             )
         {
             break;
         }*/
@@ -349,7 +339,7 @@ discern_result_t discern(void)
     local_t *mids;//中线
     mids=get_midline(new_img);
     
-    static discern_result_t result={0,300};//初始偏角，初始速度
+    static discern_result_t result={0,250};//初始偏角，初始速度
 
     if(mids==NULL)
     {

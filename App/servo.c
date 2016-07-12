@@ -7,7 +7,7 @@
 #define median      (5500)
 
 static double a=0;
-static int b=0;
+static double b=0;
 
 void servo_init(void)
 {
@@ -15,7 +15,7 @@ void servo_init(void)
     flash_init();
     uint32 data = flash_read(FLASH_SECTOR_NUM-1, 0, uint32);
     a=(double)(data>>16)/100;
-    b=data&0xffff;
+    b=(double)(data&0xffff)/10;
 }
 
 void set_servo(servo_path path,duty_t angle)
@@ -68,7 +68,7 @@ void angle_debuger(void)
         if(key_get(KEY_B)==KEY_DOWN)
         {
             flash_erase_sector(FLASH_SECTOR_NUM-1);
-            if(flash_write(FLASH_SECTOR_NUM-1, 0, ((int)(a*100)<<16|b))==1)
+            if(flash_write(FLASH_SECTOR_NUM-1, 0, ((int)(a*100)<<16|(int)(b*10)))==1)
             {
                 LCD_printf(0,110,"success!");
             }
@@ -85,7 +85,7 @@ void angle_debuger(void)
         DELAY_MS(10);
         if(key_get(KEY_L)==KEY_DOWN)
         {
-            b-=1;
+            b-=0.5;
         }
         while(key_get(KEY_L)==KEY_DOWN);
     }
@@ -95,28 +95,37 @@ void angle_debuger(void)
         DELAY_MS(10);
         if(key_get(KEY_R)==KEY_DOWN)
         {
-            b+=1;
+            b+=0.5;
         }
         while(key_get(KEY_R)==KEY_DOWN);
     }
-    LCD_printf(0,95,"%3d %3d",(int)(a*100),b);
+    LCD_printf(0,95,"%3d %3d",(int)(a*100),(int)(b*10));
 }
 
 static void angle_control(angle_t err)
 {
-    static double errs[2]={0};
+    static double errs[4]={0};
+    errs[3]=errs[2];
+    errs[2]=errs[1];
     errs[1]=errs[0];
     errs[0]=err;
-    if(abs(err)<2&&fabs(errs[0]-errs[1])<2)
+    if(abs(err)<4&&fabs(errs[0]-errs[1])<4)
     {
         return;
     }
     double P,D;
     int32 result;
-    angle_debuger();//五轴按键调试
-    P=(err*err)*a+b;
-    D=P/3;
-    result=(int32)(err*P+D*(errs[0]-errs[1])+0.5);
+//    angle_debuger();//五轴按键调试
+    if(err>=0)
+    {
+        P=(err*err)*0.41+5;//1.0 15
+    }
+    else
+    {
+        P=(err*err)*0.10+7.5;
+    }
+    D=0;
+    result=(int32)(err*P+D*(errs[0]-errs[2])+0.5);
     if(result>=0)
     {
         set_servo(servo_right,result);

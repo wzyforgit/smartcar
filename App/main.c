@@ -52,12 +52,33 @@ void init(void)
 
 void main(void)
 {
+    extern flag_t f_start;
+    count_t end_count=0;
     init();
     discern_result_t control_result={0,0};
     while(1)
     {
         control_result=discern();
         set_angle(control_result.angle);
-        set_speed(control_result.speed);
+        if(GPIO_GET_NBIT(1,PTC19))
+        {
+            if(!f_start)
+            {
+                set_speed(150);
+            }
+            else if(f_start&&end_count<=20)
+            {
+                set_speed(150);
+                end_count++;
+            }
+            else if(end_count>20)
+            {
+                set_speed(0);
+            }
+        }
+        else
+        {
+            set_speed(0);
+        }
     }
 }
