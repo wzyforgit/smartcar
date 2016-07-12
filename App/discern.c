@@ -37,21 +37,7 @@ static void DMA0_IRQHandler(void)
 
 /*识别*/
 
-#define high_speed   0x01
-#define median_speed 0x02
-#define low_speed    0x03
-static int32 mode=0;
 flag_t f_start=0;
-static void read_DIPswitch(void)
-{
-    gpio_init(PTC16,GPI,0);
-    gpio_init(PTC17,GPI,0);
-    gpio_init(PTC18,GPI,0);
-    gpio_init(PTC19,GPI,0);
-    
-    mode=GPIO_GET_NBIT(3,PTC16);
-    LCD_printf(0,61,"%d",mode);
-}
 
 static void display_start_end(void);
 void discern_init(void)
@@ -61,7 +47,6 @@ void discern_init(void)
     set_vector_handler(DMA0_VECTORn , DMA0_IRQHandler);     //摄像头DMA中断
     NVIC_SetPriority(PORTA_IRQn,0);
     NVIC_SetPriority(DMA0_IRQn,1);
-    read_DIPswitch();
     display_start_end();
 }
 

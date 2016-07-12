@@ -314,6 +314,7 @@
       <file>$PROJ_DIR$\FN15_Debug\Obj\VCAN_SCCB.o</file>
       <file>$PROJ_DIR$\..\..\Chip\inc\vectors.h</file>
       <file>$PROJ_DIR$\..\..\Chip\inc\MK60_gpio_cfg.h</file>
+      <file>$PROJ_DIR$\FN15_Debug\Obj\vcan_Kinetis.pbd</file>
     </outputs>
     <file>
       <name>$PROJ_DIR$\..\..\Chip\src\MK60_wdog.c</name>

@@ -6,16 +6,65 @@
 #define servo_HZ    (300)
 #define median      (5500)
 
-static double a=0;
-static double b=0;
+#define high_speed   0x01
+#define median_speed 0x02
+#define low_speed    0x03
+
+double la=0;
+double lb=0;
+double ra=0;
+double rb=0;
+double D=0;
+speed_t run_speed=0;
+int32 mode;
+
+static void read_DIPswitch(void)
+{
+    gpio_init(PTC16,GPI,0);
+    gpio_init(PTC17,GPI,0);
+    gpio_init(PTC18,GPI,0);
+    gpio_init(PTC19,GPI,0);
+    
+    mode=GPIO_GET_NBIT(3,PTC16);
+    switch(mode)
+    {
+        case high_speed:
+             la=0.26;
+             lb=7.5;
+             ra=2.1;
+             rb=5;
+             run_speed=240;
+             LCD_printf(0,61,"high_speed:%d",mode);
+             break;
+        
+        case median_speed:
+             la=0.18;
+             lb=7.5;
+             ra=1.8;
+             rb=5;
+             run_speed=200;
+             LCD_printf(0,61,"median_speed:%d",mode);
+             break;
+
+        case low_speed:
+             la=0.10;
+             lb=5;
+             ra=0.41;
+             rb=5;
+             run_speed=150;
+             LCD_printf(0,61,"low_speed:%d",mode);
+             break;
+
+        default:
+             LCD_printf(0,0,"mode error:%d",mode);
+             while(1);
+    }
+}
 
 void servo_init(void)
 {
     ftm_pwm_init(servo_FTM, servo_CH,servo_HZ,FTM1_PRECISON);
-    flash_init();
-    uint32 data = flash_read(FLASH_SECTOR_NUM-1, 0, uint32);
-    a=(double)(data>>16)/100;
-    b=(double)(data&0xffff)/10;
+    read_DIPswitch();
 }
 
 void set_servo(servo_path path,duty_t angle)
@@ -40,68 +89,6 @@ void set_servo(servo_path path,duty_t angle)
     ftm_pwm_duty(servo_FTM, servo_CH,pwm_out);
 }
 
-void angle_debuger(void)
-{
-    if(key_get(KEY_U)==KEY_DOWN)
-    {
-        DELAY_MS(10);
-        if(key_get(KEY_U)==KEY_DOWN)
-        {
-            a+=0.1;
-        }
-        while(key_get(KEY_U)==KEY_DOWN);
-    }
-
-    if(key_get(KEY_D)==KEY_DOWN)
-    {
-        DELAY_MS(10);
-        if(key_get(KEY_D)==KEY_DOWN)
-        {
-            a-=0.1;
-        }
-        while(key_get(KEY_D)==KEY_DOWN);
-    }
-
-    if(key_get(KEY_B)==KEY_DOWN)
-    {
-        DELAY_MS(10);
-        if(key_get(KEY_B)==KEY_DOWN)
-        {
-            flash_erase_sector(FLASH_SECTOR_NUM-1);
-            if(flash_write(FLASH_SECTOR_NUM-1, 0, ((int)(a*100)<<16|(int)(b*10)))==1)
-            {
-                LCD_printf(0,110,"success!");
-            }
-            else
-            {
-                LCD_printf(0,110,"fail!");
-            }
-        }
-        while(key_get(KEY_B)==KEY_DOWN);
-    }
-
-    if(key_get(KEY_L)==KEY_DOWN)
-    {
-        DELAY_MS(10);
-        if(key_get(KEY_L)==KEY_DOWN)
-        {
-            b-=0.5;
-        }
-        while(key_get(KEY_L)==KEY_DOWN);
-    }
-
-    if(key_get(KEY_R)==KEY_DOWN)
-    {
-        DELAY_MS(10);
-        if(key_get(KEY_R)==KEY_DOWN)
-        {
-            b+=0.5;
-        }
-        while(key_get(KEY_R)==KEY_DOWN);
-    }
-    LCD_printf(0,95,"%3d %3d",(int)(a*100),(int)(b*10));
-}
-
 static void angle_control(angle_t err)
 {
     static double errs[4]={0};
@@ -115,16 +102,22 @@ static void angle_control(angle_t err)
     }
     double P,D;
     int32 result;
-//    angle_debuger();//ÎåÖá°´¼üµ÷ÊÔ
     if(err>=0)
     {
-        P=(err*err)*0.41+5;//1.0 15
+        P=(err*err)*ra+rb;
     }
     else
     {
-        P=(err*err)*0.10+7.5;
+        P=(err*err)*la+lb;
     }
-    D=0;
+    if(mode==high_speed||mode==median_speed)
+    {
+        D=P/3;
+    }
+    else
+    {
+        D=0;
+    }
     result=(int32)(err*P+D*(errs[0]-errs[2])+0.5);
     if(result>=0)
     {

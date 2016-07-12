@@ -35,12 +35,12 @@ void init(void)
     DisableInterrupts;
     
     NVIC_SetPriorityGrouping(NVIC_PriorityGroup_4);//中断优先级组
+    LCD_init();       //LCD屏
     motor_init();     //电机
     servo_init();     //舵机
 #if(motor_control==1)
     E6A2_init();      //编码器
 #endif
-    LCD_init();       //LCD屏
     discern_init();   //识别模块
     debuger_init();
 
@@ -53,6 +53,7 @@ void init(void)
 void main(void)
 {
     extern flag_t f_start;
+    extern speed_t run_speed;
     count_t end_count=0;
     init();
     discern_result_t control_result={0,0};
@@ -64,7 +65,7 @@ void main(void)
         {
             if(!f_start)
             {
-                set_speed(150);
+                set_speed(run_speed);
             }
             else if(f_start&&end_count<=20)
             {
